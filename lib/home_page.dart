@@ -45,7 +45,7 @@ class _HomePageState extends State<HomePage>{
                             return Center(
                               child: ListTile(
                                 onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=>ReservationPage()));
+                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> ReservationPage(title: selectedInst)));
                                 },
                                 contentPadding: EdgeInsets.symmetric(horizontal: 15),
                                 trailing: Icon(Icons.access_alarm_rounded),
