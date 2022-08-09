@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "565359380959",
+    "project_id": "flutterdeneme-b4a9c",
+    "storage_bucket": "flutterdeneme-b4a9c.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:565359380959:android:97f67f2178163144ef5c6a",
+        "android_client_info": {
+          "package_name": "com.example.flutterfirebasedeneme"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "565359380959-fqikjh0tse48dtgk60absnnbi2g6om7q.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDi_cf8ILzrqeewRGkQ4BUA0MQo0BwFy_k"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "565359380959-fqikjh0tse48dtgk60absnnbi2g6om7q.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
