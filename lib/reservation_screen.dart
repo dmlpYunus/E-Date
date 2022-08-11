@@ -63,23 +63,22 @@ class _ReservationPageState extends State<ReservationPage> {
 
   Widget hoursView() {
     return Container(
-      margin: EdgeInsets.fromLTRB(10,height * 0.38, 10, 10),
+      margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),
       width: width,
       height: height * 0.60,
       child: ListView.builder(
         itemCount: hours.length,
         itemBuilder: (context, index) {
           return ListTile(
-              title: Text(hours[index]),
-              leading: Icon(Icons.access_time),
-            onTap: (){
-                int selectedHour = double.parse(hours[index].toString()).floor();
-                DateTime reservationDate = currentDateTime.add(Duration(hours: selectedHour));
-                print(reservationDate);
+            title: Text(hours[index]),
+            leading: const Icon(Icons.access_time),
+            onTap: () {
+              int selectedHour = double.parse(hours[index].toString()).floor();
+              DateTime reservationDate =
+                  currentDateTime.add(Duration(hours: selectedHour));
             },
           );
         },
-
       ),
     );
   }
@@ -94,7 +93,7 @@ class _ReservationPageState extends State<ReservationPage> {
           padding: EdgeInsets.zero,
           itemBuilder: (BuildContext context, int index) {
             return Container(
-              margin: EdgeInsets.fromLTRB(0, 0, 0, 15),
+              margin: const EdgeInsets.fromLTRB(0, 0, 0, 15),
               width: width - 20,
               height: 70,
               decoration: BoxDecoration(
@@ -123,12 +122,23 @@ class _ReservationPageState extends State<ReservationPage> {
 
   Widget titleView() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0 ,0, 0, 20),
+      padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.arrow_back_ios_new_rounded,size: 30,color: Colors.deepOrangeAccent),
-          SizedBox(width: 20),
+          GestureDetector(
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                size: 30, color: Colors.deepOrangeAccent)
+            ,
+            onTap: (){
+              setState(() {
+                displaySnackBar("Previous Month");
+              });
+
+              print("Previous Month");
+            },
+          ),
+          const SizedBox(width: 20),
           Text(
             date_util.DateUtils.months[currentDateTime.month - 1] +
                 ' ' +
@@ -136,8 +146,9 @@ class _ReservationPageState extends State<ReservationPage> {
             style: const TextStyle(
                 color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
           ),
-          SizedBox(width: 20),
-          Icon(Icons.arrow_forward_ios,size: 30,color: Colors.deepOrangeAccent),
+          const SizedBox(width: 20),
+          const Icon(Icons.arrow_forward_ios,
+              size: 30, color: Colors.deepOrangeAccent),
         ],
       ),
     );
@@ -160,7 +171,6 @@ class _ReservationPageState extends State<ReservationPage> {
     );
   }
 
-
   Widget capsuleView(int index) {
     return Padding(
         padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
@@ -180,15 +190,15 @@ class _ReservationPageState extends State<ReservationPage> {
                 gradient: LinearGradient(
                     colors: (currentMonthList[index].day != currentDateTime.day)
                         ? [
-                      Colors.white.withOpacity(0.8),
-                      Colors.white.withOpacity(0.7),
-                      Colors.white.withOpacity(0.6)
-                    ]
+                            Colors.white.withOpacity(0.8),
+                            Colors.white.withOpacity(0.7),
+                            Colors.white.withOpacity(0.6)
+                          ]
                         : [
-                      HexColor("ED6184"),
-                      HexColor("EF315B"),
-                      HexColor("E2042D")
-                    ],
+                            HexColor("ED6184"),
+                            HexColor("EF315B"),
+                            HexColor("E2042D")
+                          ],
                     begin: const FractionalOffset(0.0, 0.0),
                     end: const FractionalOffset(0.0, 1.0),
                     stops: const [0.0, 0.5, 1.0],
@@ -212,9 +222,9 @@ class _ReservationPageState extends State<ReservationPage> {
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
                         color:
-                        (currentMonthList[index].day != currentDateTime.day)
-                            ? HexColor("465876")
-                            : Colors.white),
+                            (currentMonthList[index].day != currentDateTime.day)
+                                ? HexColor("465876")
+                                : Colors.white),
                   ),
                   Text(
                     date_util.DateUtils
@@ -223,9 +233,9 @@ class _ReservationPageState extends State<ReservationPage> {
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
                         color:
-                        (currentMonthList[index].day != currentDateTime.day)
-                            ? HexColor("465876")
-                            : Colors.white),
+                            (currentMonthList[index].day != currentDateTime.day)
+                                ? HexColor("465876")
+                                : Colors.white),
                   )
                 ],
               ),
@@ -277,10 +287,6 @@ class _ReservationPageState extends State<ReservationPage> {
         child: Container(
           width: 100,
           height: 100,
-          child: const Icon(
-            Icons.add,
-            size: 30,
-          ),
           decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
@@ -293,6 +299,10 @@ class _ReservationPageState extends State<ReservationPage> {
                   end: const FractionalOffset(0.0, 1.0),
                   stops: const [0.0, 0.5, 1.0],
                   tileMode: TileMode.clamp)),
+          child: const Icon(
+            Icons.done_outlined,
+            size: 30,
+          ),
         ),
         onPressed: () {
           controller.text = "";
@@ -306,7 +316,7 @@ class _ReservationPageState extends State<ReservationPage> {
                   child: Container(
                     height: 200,
                     width: 320,
-                    padding: EdgeInsets.all(12),
+                    padding: const EdgeInsets.all(12),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: <Widget>[
@@ -356,15 +366,11 @@ class _ReservationPageState extends State<ReservationPage> {
     );
   }
 
-
-
-
-
   void displaySnackBar(String message) {
     var snackBar = SnackBar(
       content: Text(
         message,
-        style: const TextStyle(fontSize:14),
+        style: const TextStyle(fontSize: 14),
         textAlign: TextAlign.center,
       ),
       dismissDirection: DismissDirection.down,

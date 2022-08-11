@@ -12,7 +12,8 @@ import 'firebase_options.dart';
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
+    options
+        : DefaultFirebaseOptions.currentPlatform,
   );
   runApp(MaterialApp(home: MyApp()));
 }
@@ -43,70 +44,6 @@ class _MyAppState extends State<MyApp> {
           }else{
             return LoginPage();
           }
-          return Column(
-            children: [
-              Expanded(
-                child: StreamBuilder(
-                    stream: groceries.orderBy("name").snapshots(),
-                    //groceries.snapshots(),
-                    builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                      if (!snapshot.hasData) {
-                        return Center(
-                          child: Text("Loading..."),
-                        );
-                      }
-                      return ListView(
-                        children: snapshot.data!.docs.map((grocery) {
-                          return Center(
-                            child: ListTile(
-                              title: Text(grocery['name']),
-                              onLongPress: () {
-                                grocery.reference.delete();
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      );
-                    }),
-              ),
-              Row(
-                children: [
-                  Flexible(
-                    fit: FlexFit.tight,
-                    flex: 2,
-                    child: RaisedButton(
-                      color: Colors.blueAccent,
-                      onPressed: () {
-                        Navigator.push(context,
-                            MaterialPageRoute(builder: (context) => LoginPage()));
-                      },
-                      child: Text("Login"),
-                    ),
-                  ),
-                  Flexible(
-                      fit: FlexFit.tight,
-                      flex: 2,
-                      child: RaisedButton(
-                        color: Colors.redAccent,
-                    onPressed: () {
-                      Navigator.push(context,
-                          MaterialPageRoute(builder: (context) => SignupPage()));
-                    },
-                    child: Text("Sign-Up"),
-                  )),Flexible(
-                      fit: FlexFit.tight,
-                      flex: 4,
-                      child: RaisedButton(
-                        color: Colors.orangeAccent,
-                        onPressed: () {
-                          authService.logOut();
-                        },
-                        child: Text("Log-Out"),
-                      ))
-                ],
-              ),
-            ],
-          );
         }
       ),
     );

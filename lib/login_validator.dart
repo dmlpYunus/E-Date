@@ -18,18 +18,4 @@ class StudentValidationMixin{
     }
   }
 
-
-  /*String? validateLastName(String? value){
-    if(value != null && value.length<2){
-      return "Last nNme must be at least 2 characters";
-    }
-  }
-  String? validateGrade(String? value){
-    if(value!=null){
-      var grade = int.parse(value);
-      if(grade <0 || grade > 100){
-        return "Must between 0-100";
-      }
-    }
-  }*/
 }

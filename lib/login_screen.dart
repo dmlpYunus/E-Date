@@ -71,12 +71,7 @@ class _LoginPageState extends State<LoginPage> with StudentValidationMixin {
                       }on FirebaseAuthException catch(error){
                        displayDialog("Login Failed", error.message!, context);
                       }
-                      
-                      
-                      
-                      /*displayDialog("Login Succsessfull",
-                          "Entered as ${emailEditor.text}", context);*/
-                      //Navigator.push(context, MaterialPageRoute(builder : (context) => MyApp()));
+
                     }
                   },
                   child: Text("Sign-In"),
@@ -85,7 +80,8 @@ class _LoginPageState extends State<LoginPage> with StudentValidationMixin {
 
 
                 Row(
-                  mainAxisSize: MainAxisSize.max,
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                   TextButton(onPressed: (){
                     Navigator.push(context, MaterialPageRoute(builder: (context) => ForgetPasswordPage()));

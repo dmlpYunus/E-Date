@@ -45,7 +45,7 @@ class _ForgetPasswordPage extends State<ForgetPasswordPage> with StudentValidati
                     //Navigator.push(context, MaterialPageRoute(builder : (context) => MyApp()));
                   }
                 },
-                child: Text("Sign-In"),
+                child: Text("Send E-mail"),
               ),
             ],
           ),
