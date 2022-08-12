@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutterfirebasedeneme/Utils/instructor.dart';
+import 'Model/instructor.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/login_screen.dart';
 import 'package:flutterfirebasedeneme/reservation_screen.dart';
@@ -21,6 +21,7 @@ class _HomePageState extends State<HomePage>{
   CollectionReference instructorsdb =
   FirebaseFirestore.instance.collection("instructors");
   String selectedInst = "1234";
+   Instructor selected = Instructor();
 
   @override
   Widget build(BuildContext context) {
@@ -42,8 +43,12 @@ class _HomePageState extends State<HomePage>{
                             return Center(
                               child: ListTile(
                                 onTap: (){
-                                    selectedInst = instructors['name'];
-                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> ReservationPage(title: selectedInst)));
+                                  selected = Instructor.withValues(instructors['id'],
+                                      instructors['name'],
+                                      instructors['email'],
+                                      instructors['surname'],"Computer");
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> ReservationPage(
+                                        title: selectedInst,instructor: selected)));
                                 },
                                 contentPadding: EdgeInsets.symmetric(horizontal: 15),
                                 trailing: Icon(Icons.access_alarm_rounded),
@@ -98,4 +103,5 @@ class _HomePageState extends State<HomePage>{
             )
     );
   }
+
 }

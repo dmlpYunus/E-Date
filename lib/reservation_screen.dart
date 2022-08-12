@@ -1,19 +1,22 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'Model/instructor.dart';
 import 'utils/colors_util.dart';
 import 'utils/date_utils.dart' as date_util;
 
 class ReservationPage extends StatefulWidget {
-  final String title;
-  const ReservationPage({Key? key, required this.title}) : super(key: key);
+  Instructor instructor;
+  String title;
+  ReservationPage({Key? key, required this.title,required this.instructor}) : super(key: key);
 
   @override
-  _ReservationPageState createState() => _ReservationPageState(title);
+  _ReservationPageState createState() => _ReservationPageState(title,instructor);
 }
 
 class _ReservationPageState extends State<ReservationPage> {
-  String instructor;
-  _ReservationPageState(this.instructor);
+  String instName;
+  Instructor instructor;
+  _ReservationPageState(this.instName,this.instructor);
 
   List hours = [
     '08.00',
@@ -34,6 +37,7 @@ class _ReservationPageState extends State<ReservationPage> {
   double height = 0.0;
   late ScrollController scrollController;
   late DateTime selectedDateTime;
+  late DateTime selectedDay;
   List<DateTime> currentMonthList = List.empty();
   List monthDays = date_util.DateUtils.daysInMonth(DateTime.now());
   DateTime currentDateTime = DateTime.now();
@@ -62,13 +66,8 @@ class _ReservationPageState extends State<ReservationPage> {
     currentMonthList = currentMonthList.toSet().toList();
     scrollController =
         ScrollController(initialScrollOffset: 70.0 * currentDateTime.day +1 );
-    selectedDateTime = currentDateTime.subtract(Duration(
-      hours: currentDateTime.hour,
-      minutes: currentDateTime.minute,
-      seconds: currentDateTime.second,
-      microseconds: currentDateTime.microsecond,
-      milliseconds: currentDateTime.millisecond,
-    ));
+    selectedDay = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);
+    print(selectedDay);
     super.initState();
   }
 
@@ -84,10 +83,10 @@ class _ReservationPageState extends State<ReservationPage> {
             title: Text(hours[index]),
             leading: const Icon(Icons.access_time),
             onTap: () {
-              selectedDateTime = clearDateTime(selectedDateTime);
+             // selectedDateTime = clearDateTime(selectedDateTime);
               int selectedHour = double.parse(hours[index].toString()).floor();
-              selectedDateTime = selectedDateTime.add(Duration(hours: selectedHour));
-              print(selectedDateTime);
+              selectedDateTime = selectedDay.add(Duration(hours: selectedHour));
+              print("final Date :  "  + selectedDateTime.toString());
             },
           );
         },
@@ -186,9 +185,9 @@ class _ReservationPageState extends State<ReservationPage> {
           onTap: () {
             setState(() {
               currentDateTime = currentMonthList[index];
-              selectedDateTime = currentDateTime;
-              clearDateTime(selectedDateTime);
-              print(selectedDateTime);
+              selectedDay = currentDateTime;
+              clearDateTime(selectedDay);
+              print(selectedDay);
             });
           },
           child: Container(
@@ -394,10 +393,7 @@ class _ReservationPageState extends State<ReservationPage> {
     dateTime.subtract(Duration(
       hours: dateTime.hour,
       minutes: dateTime.minute,
-      seconds: dateTime.second,
     ));
-    print("asdas");
-    print(dateTime);
     return dateTime;
   }
 
