@@ -8,10 +8,13 @@ class ReservationPage extends StatefulWidget {
   const ReservationPage({Key? key, required this.title}) : super(key: key);
 
   @override
-  _ReservationPageState createState() => _ReservationPageState();
+  _ReservationPageState createState() => _ReservationPageState(title);
 }
 
 class _ReservationPageState extends State<ReservationPage> {
+  String instructor;
+  _ReservationPageState(this.instructor);
+
   List hours = [
     '08.00',
     '09.00',
@@ -30,6 +33,7 @@ class _ReservationPageState extends State<ReservationPage> {
   double width = 0.0;
   double height = 0.0;
   late ScrollController scrollController;
+  late DateTime selectedDateTime;
   List<DateTime> currentMonthList = List.empty();
   List monthDays = date_util.DateUtils.daysInMonth(DateTime.now());
   DateTime currentDateTime = DateTime.now();
@@ -57,7 +61,14 @@ class _ReservationPageState extends State<ReservationPage> {
     currentMonthList.sort((a, b) => a.day.compareTo(b.day));
     currentMonthList = currentMonthList.toSet().toList();
     scrollController =
-        ScrollController(initialScrollOffset: 70.0 * currentDateTime.day);
+        ScrollController(initialScrollOffset: 70.0 * currentDateTime.day +1 );
+    selectedDateTime = currentDateTime.subtract(Duration(
+      hours: currentDateTime.hour,
+      minutes: currentDateTime.minute,
+      seconds: currentDateTime.second,
+      microseconds: currentDateTime.microsecond,
+      milliseconds: currentDateTime.millisecond,
+    ));
     super.initState();
   }
 
@@ -73,9 +84,10 @@ class _ReservationPageState extends State<ReservationPage> {
             title: Text(hours[index]),
             leading: const Icon(Icons.access_time),
             onTap: () {
+              selectedDateTime = clearDateTime(selectedDateTime);
               int selectedHour = double.parse(hours[index].toString()).floor();
-              DateTime reservationDate =
-                  currentDateTime.add(Duration(hours: selectedHour));
+              selectedDateTime = selectedDateTime.add(Duration(hours: selectedHour));
+              print(selectedDateTime);
             },
           );
         },
@@ -131,11 +143,7 @@ class _ReservationPageState extends State<ReservationPage> {
                 size: 30, color: Colors.deepOrangeAccent)
             ,
             onTap: (){
-              setState(() {
-                displaySnackBar("Previous Month");
-              });
-
-              print("Previous Month");
+              print(instructor);
             },
           ),
           const SizedBox(width: 20),
@@ -178,9 +186,9 @@ class _ReservationPageState extends State<ReservationPage> {
           onTap: () {
             setState(() {
               currentDateTime = currentMonthList[index];
-              displaySnackBar(currentDateTime.toString());
-              print(currentDateTime.toString());
-              print(currentMonthList);
+              selectedDateTime = currentDateTime;
+              clearDateTime(selectedDateTime);
+              print(selectedDateTime);
             });
           },
           child: Container(
@@ -381,4 +389,17 @@ class _ReservationPageState extends State<ReservationPage> {
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
+
+  DateTime clearDateTime(DateTime dateTime){
+    dateTime.subtract(Duration(
+      hours: dateTime.hour,
+      minutes: dateTime.minute,
+      seconds: dateTime.second,
+    ));
+    print("asdas");
+    print(dateTime);
+    return dateTime;
+  }
+
+
 }

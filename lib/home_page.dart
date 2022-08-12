@@ -18,15 +18,12 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage>{
   final textController = TextEditingController();
   AuthService _authService = AuthService();
+  CollectionReference instructorsdb =
+  FirebaseFirestore.instance.collection("instructors");
+  String selectedInst = "1234";
 
   @override
   Widget build(BuildContext context) {
-    CollectionReference instructorsdb =
-    FirebaseFirestore.instance.collection("instructors");
-    Instructor selectedInstructor;
-    String selectedInst = "";
-    
-
     return Scaffold(
       body:Column(
               children: [
@@ -45,7 +42,8 @@ class _HomePageState extends State<HomePage>{
                             return Center(
                               child: ListTile(
                                 onTap: (){
-                                  Navigator.push(context, MaterialPageRoute(builder: (context)=> ReservationPage(title: selectedInst)));
+                                    selectedInst = instructors['name'];
+                                    Navigator.push(context, MaterialPageRoute(builder: (context)=> ReservationPage(title: selectedInst)));
                                 },
                                 contentPadding: EdgeInsets.symmetric(horizontal: 15),
                                 trailing: Icon(Icons.access_alarm_rounded),
@@ -58,7 +56,7 @@ class _HomePageState extends State<HomePage>{
                         );
                       }),
                 ),
-                Text("Selected instructor : " + selectedInst),
+                Text("Selected instructor : $selectedInst"),
                 Row(
                   children: [
                     Flexible(
