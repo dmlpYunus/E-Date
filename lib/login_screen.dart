@@ -12,7 +12,7 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> with StudentValidationMixin {
+class _LoginPageState extends State<LoginPage> with AccountValidationMixin {
   @override
   AuthService authService = AuthService();
   final emailEditor = TextEditingController();

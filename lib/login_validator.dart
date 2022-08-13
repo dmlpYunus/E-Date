@@ -1,6 +1,6 @@
 import 'package:email_validator/email_validator.dart';
 
-class StudentValidationMixin{
+class AccountValidationMixin{
 
   String? validateMail(String? value){
     if(value == null || value.isEmpty){

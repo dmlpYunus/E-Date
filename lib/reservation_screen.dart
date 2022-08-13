@@ -1,5 +1,7 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterfirebasedeneme/Model/appointment.dart';
 import 'Model/instructor.dart';
 import 'utils/colors_util.dart';
 import 'utils/date_utils.dart' as date_util;
@@ -66,28 +68,50 @@ class _ReservationPageState extends State<ReservationPage> {
     currentMonthList = currentMonthList.toSet().toList();
     scrollController =
         ScrollController(initialScrollOffset: 70.0 * currentDateTime.day +1 );
-    selectedDay = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);
-    print(selectedDay);
+    selectedDay = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);//.add(Duration(hours: 8));
+    selectedDateTime = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);
     super.initState();
   }
 
   Widget hoursView() {
     return Container(
-      margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),
+      margin: EdgeInsets.fromLTRB(10, height * 0.38, 15, 15),
       width: width,
       height: height * 0.60,
       child: ListView.builder(
-        itemCount: hours.length,
+        itemCount: hours.length-1,
         itemBuilder: (context, index) {
           return ListTile(
-            title: Text(hours[index]),
-            leading: const Icon(Icons.access_time),
+            title: Text(hours[index] +' - ' + hours[index+1],
+                style:const TextStyle(
+                  color: Colors.blueGrey,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                )
+            ),
+            autofocus: true,
+            contentPadding: EdgeInsets.only(right: 15,left: 15),
+            leading: const Icon(Icons.access_time,color: Colors.grey,size: 28,),
+            trailing: const Icon(Icons.event_available),
+            shape: Border(
+              top: BorderSide(
+                color: Colors.grey.withOpacity(0.2)
+              ),
+                bottom: BorderSide(
+            color: Colors.grey.withOpacity(0.2)
+          )
+            ),
             onTap: () {
              // selectedDateTime = clearDateTime(selectedDateTime);
+              setState(() {
+
+              });
               int selectedHour = double.parse(hours[index].toString()).floor();
               selectedDateTime = selectedDay.add(Duration(hours: selectedHour));
-              print("final Date :  "  + selectedDateTime.toString());
+              print("final Date :  $selectedDateTime");
+
             },
+
           );
         },
       ),
@@ -188,6 +212,7 @@ class _ReservationPageState extends State<ReservationPage> {
               selectedDay = currentDateTime;
               clearDateTime(selectedDay);
               print(selectedDay);
+              selectedDateTime = selectedDay;
             });
           },
           child: Container(
@@ -202,20 +227,23 @@ class _ReservationPageState extends State<ReservationPage> {
                             Colors.white.withOpacity(0.6)
                           ]
                         : [
-                            HexColor("ED6184"),
-                            HexColor("EF315B"),
-                            HexColor("E2042D")
+                            Colors.orange,
+                            Colors.deepOrange,
+                            Colors.red,
+                            //HexColor("ED6184"),
+                            //HexColor("EF315B"),
+                            //HexColor("E2042D")
                           ],
                     begin: const FractionalOffset(0.0, 0.0),
                     end: const FractionalOffset(0.0, 1.0),
                     stops: const [0.0, 0.5, 1.0],
                     tileMode: TileMode.clamp),
-                borderRadius: BorderRadius.circular(40),
+                borderRadius: BorderRadius.circular(20),
                 boxShadow: const [
                   BoxShadow(
-                    offset: Offset(4, 4),
-                    blurRadius: 4,
-                    spreadRadius: 2,
+                    offset: Offset(2, 2),
+                    blurRadius: 2,
+                    spreadRadius: 1,
                     color: Colors.black12,
                   )
                 ]),
@@ -230,7 +258,7 @@ class _ReservationPageState extends State<ReservationPage> {
                         fontWeight: FontWeight.bold,
                         color:
                             (currentMonthList[index].day != currentDateTime.day)
-                                ? HexColor("465876")
+                                ? Colors.blueGrey
                                 : Colors.white),
                   ),
                   Text(
@@ -241,7 +269,7 @@ class _ReservationPageState extends State<ReservationPage> {
                         fontWeight: FontWeight.bold,
                         color:
                             (currentMonthList[index].day != currentDateTime.day)
-                                ? HexColor("465876")
+                                ? Colors.blueGrey
                                 : Colors.white),
                   )
                 ],
@@ -297,10 +325,19 @@ class _ReservationPageState extends State<ReservationPage> {
           decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                  colors: [
-                    HexColor("ED6184"),
+                  colors:
+                  (hours.contains("${selectedDateTime.hour}.00") ||  hours.contains("0"+selectedDateTime.hour.toString()+".00")) ? [
+                    Colors.red.withOpacity(0.8),
+                    Colors.red.withOpacity(0.9),
+                    Colors.red.withOpacity(1)
+                    /*HexColor("ED6184"),
                     HexColor("EF315B"),
-                    HexColor("E2042D")
+                    HexColor("E2042D")*/
+                  ] :
+                  [
+                    Colors.grey.withOpacity(0.8),
+                    Colors.grey.withOpacity(0.9),
+                    Colors.grey.withOpacity(1)
                   ],
                   begin: const FractionalOffset(0.0, 0.0),
                   end: const FractionalOffset(0.0, 1.0),
@@ -312,62 +349,7 @@ class _ReservationPageState extends State<ReservationPage> {
           ),
         ),
         onPressed: () {
-          controller.text = "";
-          showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return Dialog(
-                  backgroundColor: Colors.black87,
-                  shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20)),
-                  child: Container(
-                    height: 200,
-                    width: 320,
-                    padding: const EdgeInsets.all(12),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: <Widget>[
-                        const SizedBox(
-                          height: 10,
-                        ),
-                        const Text(
-                          "Add Todo",
-                          style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 16,
-                              fontWeight: FontWeight.bold),
-                        ),
-                        const SizedBox(
-                          height: 30,
-                        ),
-                        TextField(
-                          controller: controller,
-                          style: const TextStyle(color: Colors.white),
-                          autofocus: true,
-                          decoration: const InputDecoration(
-                              hintText: 'Add your new todo item',
-                              hintStyle: TextStyle(color: Colors.white60)),
-                        ),
-                        const SizedBox(
-                          height: 20,
-                        ),
-                        SizedBox(
-                          width: 320,
-                          child: ElevatedButton(
-                            onPressed: () {
-                              setState(() {
-                                todos.add(controller.text);
-                              });
-                              Navigator.of(context).pop();
-                            },
-                            child: const Text("Add Todo"),
-                          ),
-                        )
-                      ],
-                    ),
-                  ),
-                );
-              });
+          createAppointment(selectedDateTime, '218YS2134', 'Yunus Can', 'Dumlupınar', instructor);
         },
       ),
     );
@@ -389,12 +371,42 @@ class _ReservationPageState extends State<ReservationPage> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  createAppointment(DateTime dateTime,String studentId,String studentName,String studentSurname,Instructor instructor){
+    Appointment b = Appointment.withValues(instructor, dateTime, studentId, studentName, studentSurname);
+    Map <String,dynamic> appointment  = Map();
+    appointment['instructorName'] = instructor.name;
+    appointment['dateTime'] = dateTime;
+    appointment['studentId'] = studentId;
+    appointment['studentName'] = studentName;
+    appointment['studentSurname'] = studentSurname;
+
+    FirebaseFirestore.instance.collection('appointments').add(appointment).whenComplete(() =>
+    displayDialog('Appointment Request Sent To ${instructor.name}', '${instructor.name}\n'
+        '${dateTime.toString()}', context)
+    );
+  }
+
   DateTime clearDateTime(DateTime dateTime){
     dateTime.subtract(Duration(
       hours: dateTime.hour,
       minutes: dateTime.minute,
     ));
     return dateTime;
+  }
+
+  void displayDialog(String Title, String message, BuildContext context) {
+    var alert = AlertDialog(
+      title: Text(Title),
+      content: Text(message),
+        actions: [
+          ElevatedButton(onPressed: (){
+            Navigator.pop(context);
+            Navigator.pop(context);
+          }, child: const Text('OKAY'))
+        ],
+
+    );
+    showDialog(context: context, builder: (BuildContext context) => alert);
   }
 
 

@@ -9,7 +9,7 @@ class SignupPage extends StatefulWidget {
   State<SignupPage> createState() => _SignUpPageState();
 }
 
-class _SignUpPageState extends State<SignupPage> with StudentValidationMixin {
+class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
   @override
   AuthService authService = AuthService();
   final emailEditor = TextEditingController();

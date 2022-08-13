@@ -43,10 +43,11 @@ class _HomePageState extends State<HomePage>{
                             return Center(
                               child: ListTile(
                                 onTap: (){
-                                  selected = Instructor.withValues(instructors['id'],
+                                  /*selected = Instructor.withValues(instructors['id'],
                                       instructors['name'],
                                       instructors['email'],
-                                      instructors['surname'],"Computer");
+                                      instructors['surname'],"Computer");*/
+                                  selected = buildInstructor(instructors);
                                     Navigator.push(context, MaterialPageRoute(builder: (context)=> ReservationPage(
                                         title: selectedInst,instructor: selected)));
                                 },
@@ -102,6 +103,13 @@ class _HomePageState extends State<HomePage>{
               ],
             )
     );
+  }
+
+  Instructor buildInstructor(QueryDocumentSnapshot inst){
+    return Instructor.withValues(inst['id'],
+        inst['name'],
+        inst['email'],
+        inst['surname'],"Computer");
   }
 
 }
