@@ -13,13 +13,12 @@ class AuthService{
 
   Future<User?> signUp(String email, String pass) async{
     var user = await _mauth.createUserWithEmailAndPassword(email: email, password: pass);
-    await _firestore.collection("users").doc(user.user?.uid).set({'email' : email, 'password' : pass});
+    await _firestore.collection("users").doc(user.user?.uid).set({'email' : email, 'password' : pass, 'role':'student','studentId' : email.split('@')[0]},);
     return user.user;
   }
 
    logOut(){
     _mauth.signOut().then((value) => {
-    print('Logged OUT!!!')
     });
   }
 

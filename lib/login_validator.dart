@@ -18,4 +18,16 @@ class AccountValidationMixin{
     }
   }
 
+  String? validateName(String? value){
+    if(value == null || value.isEmpty){
+      return "Name can't be Empty!";
+    }
+  }
+
+  String? validateSurname(String? value){
+    if(value == null || value.isEmpty){
+      return "Surname can't be Empty!";
+    }
+  }
+
 }

@@ -32,20 +32,37 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
-    CollectionReference groceries =
-        FirebaseFirestore.instance.collection("grecories");
-
     return Scaffold(
       body: StreamBuilder<User?>(
-        stream: FirebaseAuth.instance.authStateChanges(),
-        builder: (context, snapshot) {
-          if(snapshot.hasData){
-              return HomePage();
-          }else{
-            return LoginPage();
+          stream: FirebaseAuth.instance.authStateChanges(),
+          builder: (context, snapshot) {
+            if(snapshot.hasData){
+              return HomePage(              );
+
+            }else{
+              return LoginPage();
+            }
           }
-        }
       ),
     );
+
+    /*return FutureBuilder(
+      future: Firebase.initializeApp(),
+      builder: (context,snapshot){
+        if(snapshot.connectionState == ConnectionState.done){
+          return MaterialApp(
+          debugShowCheckedModeBanner: false,
+          home: (FirebaseAuth.instance.currentUser == null) ? LoginPage() : HomePage(),
+          );
+    }else{
+          return MaterialApp(
+          debugShowCheckedModeBanner: false,
+            home: Scaffold(
+            body: Container()),
+          );
+    }
+    }
+    );*/
+
   }
 }

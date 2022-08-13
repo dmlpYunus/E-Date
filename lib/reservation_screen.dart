@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfirebasedeneme/Model/appointment.dart';
@@ -19,6 +20,9 @@ class _ReservationPageState extends State<ReservationPage> {
   String instName;
   Instructor instructor;
   _ReservationPageState(this.instName,this.instructor);
+  final _firebaseAuth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+  late String name,surname,id;
 
   List hours = [
     '08.00',
@@ -63,6 +67,7 @@ class _ReservationPageState extends State<ReservationPage> {
 
   @override
   void initState() {
+    super.initState();
     currentMonthList = date_util.DateUtils.daysInMonth(currentDateTime);
     currentMonthList.sort((a, b) => a.day.compareTo(b.day));
     currentMonthList = currentMonthList.toSet().toList();
@@ -70,7 +75,28 @@ class _ReservationPageState extends State<ReservationPage> {
         ScrollController(initialScrollOffset: 70.0 * currentDateTime.day +1 );
     selectedDay = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);//.add(Duration(hours: 8));
     selectedDateTime = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);
-    super.initState();
+    loadUserData();
+    getAppointmentTable();
+  }
+
+  loadUserData(){
+    _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get().then((snapshot) {
+      setState(() {
+        print(snapshot.data()!['email']);
+        print(snapshot.data()!['surname']);
+        print(snapshot.data()!['studentId']);
+        print(snapshot.data()!['role']);
+      });
+    });
+  }
+
+  void getAppointmentTable(){
+    _firestore.collection('appointments').where('instructorId',isEqualTo: instructor.id).get().then((snapshot) {
+      for(int i =0;i<=snapshot.size;i++){
+       print(snapshot.docs[i].get('dateTime').toString());
+
+      }
+    });
   }
 
   Widget hoursView() {
@@ -349,7 +375,8 @@ class _ReservationPageState extends State<ReservationPage> {
           ),
         ),
         onPressed: () {
-          createAppointment(selectedDateTime, '218YS2134', 'Yunus Can', 'Dumlupınar', instructor);
+
+
         },
       ),
     );
@@ -408,6 +435,9 @@ class _ReservationPageState extends State<ReservationPage> {
     );
     showDialog(context: context, builder: (BuildContext context) => alert);
   }
+
+
+
 
 
 }

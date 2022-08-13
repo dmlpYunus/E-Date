@@ -1,6 +1,8 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
+import 'package:flutterfirebasedeneme/home_page.dart';
 import 'package:flutterfirebasedeneme/login_validator.dart';
 
 class SignupPage extends StatefulWidget {
@@ -12,8 +14,10 @@ class SignupPage extends StatefulWidget {
 class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
   @override
   AuthService authService = AuthService();
-  final emailEditor = TextEditingController();
-  final passEditor = TextEditingController();
+  final emailController = TextEditingController();
+  final passController = TextEditingController();
+  final nameController = TextEditingController();
+  final surnameController = TextEditingController();
 
   var key = GlobalKey<FormState>();
   Widget build(BuildContext context) {
@@ -25,14 +29,18 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text("Welcome To E-Date", textAlign: TextAlign.center),
-              SizedBox(height: 20),
+              const Text("Welcome To E-Date", textAlign: TextAlign.center,style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.blueGrey),),
+              const SizedBox(height: 20),
+              buildNameText(),
+              const SizedBox(height: 20),
+              buildSurnameText(),
+              const SizedBox(height: 20),
               buildEmailText(),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               buildPasswordText(),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               buildSignUpButton(),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               buildLoginPageButton(),
             ],
           ),
@@ -51,21 +59,41 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
 
   Widget buildEmailText() {
     return TextFormField(
-      controller: emailEditor,
+      controller: emailController,
       keyboardType: TextInputType.emailAddress,
       validator: validateMail,
-      decoration: InputDecoration(
+      decoration: const InputDecoration(
           labelText: ("E-Mail"), hintText: ("xxxx@isik.edu.tr")),
     );
   }
 
   Widget buildPasswordText() {
     return TextFormField(
-      controller: passEditor,
+      controller: passController,
       keyboardType: TextInputType.visiblePassword,
       validator: validatePassword,
-      decoration: InputDecoration(labelText: ("Password"), hintText: "***"),
+      decoration: const InputDecoration(labelText: ("Password"), hintText: "***"),
       obscureText: true,
+    );
+  }
+
+  Widget buildNameText() {
+    return TextFormField(
+      controller: nameController,
+      keyboardType: TextInputType.name,
+      validator: validateName,
+      decoration: const InputDecoration(labelText: ("Name")),
+      obscureText: false,
+    );
+  }
+
+  Widget buildSurnameText() {
+    return TextFormField(
+      controller: surnameController,
+      keyboardType: TextInputType.name,
+      validator: validateSurname,
+      decoration: const InputDecoration(labelText: ("Surname")),
+      obscureText: false,
     );
   }
 
@@ -75,14 +103,22 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
         if (key.currentState!.validate()) {
           key.currentState!.save();
           try {
-            await authService.signUp(emailEditor.text, passEditor.text);
+            await authService.signUp(emailController.text, passController.text).then((value) =>
+            {
+              print("Success")
+            });
           } on FirebaseAuthException catch (error) {
-            //displayDialog("Sign-Up Failed", error.message!, context);
             displaySnackBar(error.message!);
           }
+          /*Map<String,dynamic> user = Map();
+          user['email'] = emailController.text;
+          user['name'] = nameController.text;
+          user['surname'] = surnameController.text;
+          user['studentId'] = emailController.text.split('@')[0];
+          await FirebaseFirestore.instance.collection("users").doc().set(user);*/
         }
       },
-      child: Text("Sign-Up"),
+      child: const Text("Sign-Up"),
     );
   }
 
@@ -107,6 +143,6 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
         onPressed: () {
           Navigator.pop(context);
         },
-        child: Text("Already Have An Account?"));
+        child: const Text("Already Have An Account?"));
   }
 }
