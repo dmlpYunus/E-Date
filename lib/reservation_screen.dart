@@ -22,7 +22,7 @@ class _ReservationPageState extends State<ReservationPage> {
   _ReservationPageState(this.instName,this.instructor);
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  late String name,surname,id;
+  late String name,surname,id,email,role;
 
   List hours = [
     '08.00',
@@ -82,18 +82,25 @@ class _ReservationPageState extends State<ReservationPage> {
   loadUserData(){
     _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get().then((snapshot) {
       setState(() {
-        print(snapshot.data()!['email']);
-        print(snapshot.data()!['surname']);
-        print(snapshot.data()!['studentId']);
-        print(snapshot.data()!['role']);
+        email = snapshot.data()!['email'];
+        name = snapshot.data()!['name'];
+        id= snapshot.data()!['studentId'];
+        surname = snapshot.data()!['surname'];
+        role = snapshot.data()!['role'];
+        print("$email \n $name \n $id \n $surname \n $role");
       });
     });
   }
 
   void getAppointmentTable(){
     _firestore.collection('appointments').where('instructorId',isEqualTo: instructor.id).get().then((snapshot) {
-      for(int i =0;i<=snapshot.size;i++){
+      for(int i =0;i<snapshot.size;i++){
+        print(snapshot.docs[i].id);
        print(snapshot.docs[i].get('dateTime').toString());
+       print("ahahah");
+       DateTime a = DateTime.parse(snapshot.docs[i].get('dateTime'));
+       print(a);
+
 
       }
     });
@@ -375,7 +382,7 @@ class _ReservationPageState extends State<ReservationPage> {
           ),
         ),
         onPressed: () {
-
+          createAppointment(selectedDateTime, id, name, surname, instructor);
 
         },
       ),
