@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterfirebasedeneme/Model/appointment.dart';
 import 'Model/instructor.dart';
 import 'utils/colors_util.dart';
 import 'utils/date_utils.dart' as date_util;
@@ -24,21 +23,6 @@ class _ReservationPageState extends State<ReservationPage> {
   final _firestore = FirebaseFirestore.instance;
   late String name,surname,id,email,role;
 
-  List hours = [
-    '08.00',
-    '09.00',
-    '10.00',
-    '11.00',
-    '12.00',
-    '13.00',
-    '14.00',
-    '15.00',
-    '16.00',
-    '17.00',
-    '18.00',
-    '19.00',
-    '20.00',
-  ];
   double width = 0.0;
   double height = 0.0;
   late ScrollController scrollController;
@@ -46,9 +30,12 @@ class _ReservationPageState extends State<ReservationPage> {
   late DateTime selectedDay;
   List<DateTime> currentMonthList = List.empty();
   List monthDays = date_util.DateUtils.daysInMonth(DateTime.now());
+  late int selectedHourIndex,selectedMonthIndex;
+  List <DateTime> instructorAppointmentsList = [];
   DateTime currentDateTime = DateTime.now();
   List<String> todos = <String>[];
   TextEditingController controller = TextEditingController();
+
 
   @override
   Widget build(BuildContext context) {
@@ -65,6 +52,8 @@ class _ReservationPageState extends State<ReservationPage> {
         floatingActionButton: floatingActionBtn());
   }
 
+
+
   @override
   void initState() {
     super.initState();
@@ -73,37 +62,74 @@ class _ReservationPageState extends State<ReservationPage> {
     currentMonthList = currentMonthList.toSet().toList();
     scrollController =
         ScrollController(initialScrollOffset: 70.0 * currentDateTime.day +1 );
-    selectedDay = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);//.add(Duration(hours: 8));
+    selectedDay = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);
     selectedDateTime = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);
-    loadUserData();
     getAppointmentTable();
+    loadUserData();
   }
 
-  loadUserData(){
-    _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get().then((snapshot) {
+  loadUserData() async{
+    await _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get().then((snapshot) {
       setState(() {
         email = snapshot.data()!['email'];
         name = snapshot.data()!['name'];
         id= snapshot.data()!['studentId'];
         surname = snapshot.data()!['surname'];
         role = snapshot.data()!['role'];
-        print("$email \n $name \n $id \n $surname \n $role");
       });
     });
   }
 
-  void getAppointmentTable(){
-    _firestore.collection('appointments').where('instructorId',isEqualTo: instructor.id).get().then((snapshot) {
-      for(int i =0;i<snapshot.size;i++){
-        print(snapshot.docs[i].id);
-       print(snapshot.docs[i].get('dateTime').toString());
-       print("ahahah");
-       DateTime a = DateTime.parse(snapshot.docs[i].get('dateTime'));
-       print(a);
-
-
+   getAppointmentTable  () async  {
+     await _firestore.collection('appointments').
+    where('dateTimeDay',isEqualTo: selectedDay).where('instructorId',isEqualTo: instructor.id).get().then((snapshot) {
+      instructorAppointmentsList.clear();
+      if(snapshot.size == 0){
+        print(selectedDay);
+        print("EMPTY");
+        return;
       }
-    });
+      for(int i =0;i<snapshot.size;i++){
+       instructorAppointmentsList.add(snapshot.docs[i].get('dateTime').toDate());
+      }print(instructorAppointmentsList);
+    }
+    );//return instructorAppointments;
+  }
+
+  List<DateTime> buildHoursList() {
+    List<DateTime> hours = [];
+    for(int i = 8;i<=20;i++){
+      hours.add(selectedDay.add(Duration(hours: i)));
+    }
+    return hours;
+  }
+
+
+
+  void hoursViewOnTap(int index){
+    selectedHourIndex = index;
+    selectedDateTime = selectedDay.add(Duration(hours: buildHoursList()[index].hour));
+    print("final Date :  $selectedDateTime");
+
+    print("UTC LOCAL");
+    print(selectedDateTime.timeZoneOffset.inHours);
+    print(selectedDateTime.toLocal());
+    print(date_util.DateUtils.fullDayFormat(selectedDateTime).toString());
+
+    print("HOURS VİEW TAP");
+    print(instructorAppointmentsList);
+  }
+  void montViewOnTap(int index){
+    //currentDateTime = currentMonthList[index];
+    currentDateTime = date_util.DateUtils.daysInMonth(currentDateTime)[index];
+
+    selectedDay = currentDateTime;
+    clearDateTime(selectedDay);
+    selectedDateTime = selectedDay;
+    getAppointmentTable();
+    buildHoursList();
+    print("MONTH VİEW TAP");
+    print(instructorAppointmentsList);
   }
 
   Widget hoursView() {
@@ -112,10 +138,10 @@ class _ReservationPageState extends State<ReservationPage> {
       width: width,
       height: height * 0.60,
       child: ListView.builder(
-        itemCount: hours.length-1,
+        itemCount:  buildHoursList().length-1,
         itemBuilder: (context, index) {
           return ListTile(
-            title: Text(hours[index] +' - ' + hours[index+1],
+            title: Text('${buildHoursList()[index].hour}.00 - ${buildHoursList()[index+1].hour}.00',
                 style:const TextStyle(
                   color: Colors.blueGrey,
                   fontSize: 22,
@@ -125,7 +151,9 @@ class _ReservationPageState extends State<ReservationPage> {
             autofocus: true,
             contentPadding: EdgeInsets.only(right: 15,left: 15),
             leading: const Icon(Icons.access_time,color: Colors.grey,size: 28,),
-            trailing: const Icon(Icons.event_available),
+            trailing: (instructorAppointmentsList.contains(buildHoursList()[index]))
+                ? const Text("Busy",style: TextStyle(color: Colors.redAccent))
+                : const Text("Free",style: TextStyle(color: Colors.green)),
             shape: Border(
               top: BorderSide(
                 color: Colors.grey.withOpacity(0.2)
@@ -135,14 +163,16 @@ class _ReservationPageState extends State<ReservationPage> {
           )
             ),
             onTap: () {
-             // selectedDateTime = clearDateTime(selectedDateTime);
               setState(() {
-
+                hoursViewOnTap(index);
+                /*currentDateTime = currentMonthList[index];
+                selectedDay = currentDateTime;
+                clearDateTime(selectedDay);
+                print(selectedDay);
+                selectedDateTime = selectedDay;
+                buildHoursList();
+                getAppointmentTable();*/
               });
-              int selectedHour = double.parse(hours[index].toString()).floor();
-              selectedDateTime = selectedDay.add(Duration(hours: selectedHour));
-              print("final Date :  $selectedDateTime");
-
             },
 
           );
@@ -150,6 +180,7 @@ class _ReservationPageState extends State<ReservationPage> {
       ),
     );
   }
+
 
   Widget todoList() {
     return Container(
@@ -188,6 +219,16 @@ class _ReservationPageState extends State<ReservationPage> {
     );
   }
 
+  previousMonth(){
+    currentDateTime = date_util.DateUtils.previousMonth(currentDateTime);
+    selectedDateTime = currentDateTime;
+  }
+
+  nextMonth(){
+    currentDateTime = date_util.DateUtils.nextMonth(currentDateTime);
+    selectedDateTime = currentDateTime;
+  }
+
   Widget titleView() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
@@ -199,7 +240,9 @@ class _ReservationPageState extends State<ReservationPage> {
                 size: 30, color: Colors.deepOrangeAccent)
             ,
             onTap: (){
-              print(instructor);
+              setState(() {
+                previousMonth();
+              });
             },
           ),
           const SizedBox(width: 20),
@@ -211,8 +254,15 @@ class _ReservationPageState extends State<ReservationPage> {
                 color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
           ),
           const SizedBox(width: 20),
-          const Icon(Icons.arrow_forward_ios,
-              size: 30, color: Colors.deepOrangeAccent),
+          GestureDetector(
+            child: const Icon(Icons.arrow_forward_ios,
+                size: 30, color: Colors.deepOrangeAccent),
+            onTap: (){
+              setState(() {
+                nextMonth();
+              });
+            }
+          ),
         ],
       ),
     );
@@ -227,7 +277,7 @@ class _ReservationPageState extends State<ReservationPage> {
         scrollDirection: Axis.horizontal,
         physics: const ClampingScrollPhysics(),
         shrinkWrap: true,
-        itemCount: currentMonthList.length,
+        itemCount: date_util.DateUtils.daysInMonth(currentDateTime).length,
         itemBuilder: (BuildContext context, int index) {
           return capsuleView(index);
         },
@@ -241,11 +291,14 @@ class _ReservationPageState extends State<ReservationPage> {
         child: GestureDetector(
           onTap: () {
             setState(() {
-              currentDateTime = currentMonthList[index];
+              montViewOnTap(index);
+              /*currentDateTime = currentMonthList[index];
               selectedDay = currentDateTime;
               clearDateTime(selectedDay);
               print(selectedDay);
               selectedDateTime = selectedDay;
+              buildHoursList();
+              getAppointmentTable();*/
             });
           },
           child: Container(
@@ -263,9 +316,6 @@ class _ReservationPageState extends State<ReservationPage> {
                             Colors.orange,
                             Colors.deepOrange,
                             Colors.red,
-                            //HexColor("ED6184"),
-                            //HexColor("EF315B"),
-                            //HexColor("E2042D")
                           ],
                     begin: const FractionalOffset(0.0, 0.0),
                     end: const FractionalOffset(0.0, 1.0),
@@ -359,30 +409,36 @@ class _ReservationPageState extends State<ReservationPage> {
               shape: BoxShape.circle,
               gradient: LinearGradient(
                   colors:
-                  (hours.contains("${selectedDateTime.hour}.00") ||  hours.contains("0"+selectedDateTime.hour.toString()+".00")) ? [
+                  ( buildHoursList().contains(selectedDateTime)  && !instructorAppointmentsList.contains(selectedDateTime)) ? [
+                    Colors.green.withOpacity(0.8),
+                    Colors.green.withOpacity(0.9),
+                    Colors.green.withOpacity(1)
+                  ] :
+                  [
                     Colors.red.withOpacity(0.8),
                     Colors.red.withOpacity(0.9),
                     Colors.red.withOpacity(1)
-                    /*HexColor("ED6184"),
-                    HexColor("EF315B"),
-                    HexColor("E2042D")*/
-                  ] :
-                  [
-                    Colors.grey.withOpacity(0.8),
-                    Colors.grey.withOpacity(0.9),
-                    Colors.grey.withOpacity(1)
                   ],
                   begin: const FractionalOffset(0.0, 0.0),
                   end: const FractionalOffset(0.0, 1.0),
                   stops: const [0.0, 0.5, 1.0],
                   tileMode: TileMode.clamp)),
-          child: const Icon(
+          child: (buildHoursList().contains(selectedDateTime)&& !instructorAppointmentsList.contains(selectedDateTime) )
+              ? const Icon(
             Icons.done_outlined,
             size: 30,
-          ),
+          )  : const Icon(
+            Icons.cancel_outlined,
+            size: 30,
+        ),
         ),
         onPressed: () {
-          createAppointment(selectedDateTime, id, name, surname, instructor);
+          if(instructorAppointmentsList.contains(buildHoursList()[selectedHourIndex])){
+            displayErrorDialog("Error", "Selected Slot Not Available", context);
+          }else{
+            createAppointment(selectedDateTime, id, name, surname, instructor);
+          }
+
 
         },
       ),
@@ -405,17 +461,18 @@ class _ReservationPageState extends State<ReservationPage> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  createAppointment(DateTime dateTime,String studentId,String studentName,String studentSurname,Instructor instructor){
-    Appointment b = Appointment.withValues(instructor, dateTime, studentId, studentName, studentSurname);
-    Map <String,dynamic> appointment  = Map();
-    appointment['instructorName'] = instructor.name;
+  createAppointment(DateTime dateTime,String studentId,String studentName,String studentSurname,Instructor instructor) async {
+    Map <String,dynamic> appointment  = {};
     appointment['dateTime'] = dateTime;
+    appointment['appointmentRegisterTime'] = DateTime.now();
+    appointment['dateTimeDay'] = selectedDay;
+    appointment['instructorName'] = instructor.name;
+    appointment['instructorId'] = instructor.id;
     appointment['studentId'] = studentId;
     appointment['studentName'] = studentName;
     appointment['studentSurname'] = studentSurname;
-
-    FirebaseFirestore.instance.collection('appointments').add(appointment).whenComplete(() =>
-    displayDialog('Appointment Request Sent To ${instructor.name}', '${instructor.name}\n'
+    await FirebaseFirestore.instance.collection('appointments').add(appointment).whenComplete(() =>
+    displaySuccessfullDialog('Appointment Request Sent To ${instructor.name}', '${instructor.name}\n'
         '${dateTime.toString()}', context)
     );
   }
@@ -428,9 +485,9 @@ class _ReservationPageState extends State<ReservationPage> {
     return dateTime;
   }
 
-  void displayDialog(String Title, String message, BuildContext context) {
+  void displaySuccessfullDialog(String title, String message, BuildContext context) {
     var alert = AlertDialog(
-      title: Text(Title),
+      title: Text(title),
       content: Text(message),
         actions: [
           ElevatedButton(onPressed: (){
@@ -442,6 +499,15 @@ class _ReservationPageState extends State<ReservationPage> {
     );
     showDialog(context: context, builder: (BuildContext context) => alert);
   }
+
+  void displayErrorDialog(String title, String message, BuildContext context) {
+    var alert = AlertDialog(
+      title: Text(title),
+      content: Text(message),
+    );
+    showDialog(context: context, builder: (BuildContext context) => alert);
+  }
+
 
 
 
