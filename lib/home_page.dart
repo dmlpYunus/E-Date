@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'Model/instructor.dart';
@@ -21,10 +22,18 @@ class _HomePageState extends State<HomePage>{
   CollectionReference instructorsdb =
   FirebaseFirestore.instance.collection("instructors");
   String selectedInst = "1234";
-   Instructor selected = Instructor();
+  Instructor selected = Instructor();
+  late bool isAdmin;
 
   @override
-  Widget build(BuildContext context) {
+  void initState() {
+
+
+  }
+
+  @override
+  Widget build(BuildContext context){
+
     return Scaffold(
       body:Column(
               children: [
@@ -111,5 +120,11 @@ class _HomePageState extends State<HomePage>{
         inst['email'],
         inst['surname'],"Computer");
   }
+
+  issAdmin(){
+    FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get();
+  }
+
+
 
 }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
@@ -5,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'Model/instructor.dart';
 import 'utils/colors_util.dart';
 import 'utils/date_utils.dart' as date_util;
+import 'package:http/http.dart' as http;
 
 class ReservationPage extends StatefulWidget {
   Instructor instructor;
@@ -22,6 +25,7 @@ class _ReservationPageState extends State<ReservationPage> {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   late String name,surname,id,email,role;
+  late String token;
 
   double width = 0.0;
   double height = 0.0;
@@ -64,6 +68,7 @@ class _ReservationPageState extends State<ReservationPage> {
         ScrollController(initialScrollOffset: 70.0 * currentDateTime.day +1 );
     selectedDay = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);
     selectedDateTime = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);
+    getToken();
     getAppointmentTable();
     loadUserData();
   }
@@ -72,9 +77,13 @@ class _ReservationPageState extends State<ReservationPage> {
     await _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get().then((snapshot) {
       setState(() {
         email = snapshot.data()!['email'];
+        print(snapshot.data()!['email']);
         name = snapshot.data()!['name'];
+        print(snapshot.data()!['name']);
         id= snapshot.data()!['studentId'];
+        print(snapshot.data()!['studentId']);
         surname = snapshot.data()!['surname'];
+        print(snapshot.data()!['surname']);
         role = snapshot.data()!['role'];
       });
     });
@@ -475,6 +484,7 @@ class _ReservationPageState extends State<ReservationPage> {
     displaySuccessfullDialog('Appointment Request Sent To ${instructor.name}', '${instructor.name}\n'
         '${dateTime.toString()}', context)
     );
+    sendNotification(token);
   }
 
   DateTime clearDateTime(DateTime dateTime){
@@ -506,6 +516,41 @@ class _ReservationPageState extends State<ReservationPage> {
       content: Text(message),
     );
     showDialog(context: context, builder: (BuildContext context) => alert);
+  }
+
+  getToken() async {
+    FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get().then((value){
+      token = value.get('fcmToken').toString();
+    });
+  }
+
+  void sendNotification(String token) async {
+    try{
+      await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
+        headers: <String,String>{
+        'Content-Type' : 'application/json',
+          'Authorization' : 'key=AAAAg6ILid8:APA91bEV1G0iHc580oX91li0Co1qwPiZmOmjCLHMaul4Xa64uPN8IK19XgwLmtruHpk8X8EDGUwSxgnVITWgNwipRBlPuK9JJDJhcUn8YOZoEidHNlhlfhZNLZNqCYZ1QP7d0i2gKSfU'
+        },body: jsonEncode(
+            <String,dynamic>{
+              'notification' : <String,dynamic>{
+                'body' : 'Test Body',
+                'title' : 'Test Title 2'
+              },
+              'priority' : 'high',
+              'data' : <String,dynamic>{
+                'click_action' : 'FLUTTER_NOTIFICATION_CLICK',
+                'id' : '1',
+                'status' : 'done'
+              },
+              'to' : token,
+            },
+          ),
+      );
+      print("DONE!");
+
+    }catch (e){
+      print(e.toString());
+    }
   }
 
 
