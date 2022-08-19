@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -10,7 +9,6 @@ import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/fcm/fcm_background_handler.dart';
 import 'package:flutterfirebasedeneme/home_page.dart';
 import 'package:flutterfirebasedeneme/login_screen.dart';
-import 'package:flutterfirebasedeneme/signup_screen.dart';
 import 'firebase_options.dart';
 import 'package:http/http.dart' as http;
 
@@ -35,6 +33,11 @@ Future<void> main() async {
     badge: true,
     sound: true,
   );
+  FirebaseMessaging.instance.getToken().then((value) {
+    print('Token $value');
+    var a = {'fcmToken' : value};
+    FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser?.uid).update(a);
+  });
   runApp(MaterialApp(home: MyApp()));
 }
 

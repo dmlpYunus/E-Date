@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutterfirebasedeneme/admin_screen.dart';
 import 'Model/instructor.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/login_screen.dart';
@@ -64,21 +65,25 @@ class _HomePageState extends State<HomePage>{
                                 trailing: Icon(Icons.access_alarm_rounded),
                                 leading: Icon(Icons.insert_invitation_rounded),
                                 subtitle: Text(instructors['email']),
-                                title: Text(instructors['name']),
+                                title: Text('${instructors['name']} ${instructors['surname']}'),
                               ),
                             );
                           }).toList(),
                         );
                       }),
                 ),
+                ElevatedButton(onPressed: (){
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const adminScreen()));
+                },
+                    child: const Text("Admin Screen")),
                 Text("Selected instructor : $selectedInst"),
                 Row(
                   children: [
                     Flexible(
                       fit: FlexFit.tight,
                       flex: 2,
-                      child: RaisedButton(
-                        color: Colors.blueAccent,
+                      child: ElevatedButton(
+                      style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.blueAccent)),
                         onPressed: () {
                           Navigator.push(context,
                               MaterialPageRoute(builder: (context) => LoginPage()));
@@ -115,11 +120,15 @@ class _HomePageState extends State<HomePage>{
   }
 
   Instructor buildInstructor(QueryDocumentSnapshot inst){
-    return Instructor.withValues(inst['id'],
+    print('TOKEN');
+    print(inst['fcmToken']);
+    return Instructor.withFcm(inst['id'],
         inst['name'],
         inst['email'],
-        inst['surname'],"Computer");
+        inst['surname'],"Computer",inst['fcmToken']);
   }
+
+
 
   issAdmin(){
     FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get();
