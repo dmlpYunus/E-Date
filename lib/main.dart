@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/cupertino.dart';
@@ -14,6 +15,7 @@ import 'package:http/http.dart' as http;
 
 FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin;
 AndroidNotificationChannel? channel;
+Map<String,dynamic>? currentUser;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +24,7 @@ Future<void> main() async {
         : DefaultFirebaseOptions.currentPlatform,
   );
   FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
+
 
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
   channel = const AndroidNotificationChannel("e.date", "E-Date",importance: Importance.max);
@@ -33,17 +36,21 @@ Future<void> main() async {
     badge: true,
     sound: true,
   );
-  FirebaseMessaging.instance.getToken().then((value) {
+  await FirebaseMessaging.instance.getToken().then((value) {
     print('Token $value');
     var a = {'fcmToken' : value};
-    FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser?.uid).update(a);
+   FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser?.uid).update(a);
+  });
+  FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser?.uid).get().then((value) {
+    currentUser = value.data();
+    print(currentUser);
   });
   runApp(MaterialApp(home: MyApp()));
 }
 
 
 
-class MyApp extends StatefulWidget {
+class MyApp extends StatefulWidget  {
   const MyApp({Key? key}) : super(key: key);
 
 
@@ -54,16 +61,21 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   final textController = TextEditingController();
   AuthService authService = AuthService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-    FirebaseMessaging.instance.getToken().then((value) {
+  void initState()  {
+      super.initState();
+      FirebaseMessaging.instance.getToken().then((value) {
       print('Token $value');
       var a = {'fcmToken' : value};
-      FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser?.uid).update(a);
+      FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser?.uid.toString()).update(a);
+      printUserRole();
     });
+
+
+
 
     //FirebaseMessaging.instance.subscribeToTopic("demo").then((value) => print('Success'));
     FirebaseMessaging.onMessage.listen((RemoteMessage remoteMessage) {
@@ -82,6 +94,10 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  printUserRole() async {
+    print(await authService.getCurrentUserRole());
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -90,7 +106,6 @@ class _MyAppState extends State<MyApp> {
           builder: (context, snapshot) {
             if(snapshot.hasData){
               return HomePage();
-
             }else{
               return LoginPage();
             }
@@ -98,4 +113,6 @@ class _MyAppState extends State<MyApp> {
       ),
     );
   }
+
+
 }

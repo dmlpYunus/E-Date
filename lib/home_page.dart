@@ -44,7 +44,7 @@ class _HomePageState extends State<HomePage>{
                       //groceries.snapshots(),
                       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (!snapshot.hasData) {
-                          return Center(
+                          return const Center(
                             child: Text("Loading..."),
                           );
                         }
@@ -53,17 +53,13 @@ class _HomePageState extends State<HomePage>{
                             return Center(
                               child: ListTile(
                                 onTap: (){
-                                  /*selected = Instructor.withValues(instructors['id'],
-                                      instructors['name'],
-                                      instructors['email'],
-                                      instructors['surname'],"Computer");*/
                                   selected = buildInstructor(instructors);
                                     Navigator.push(context, MaterialPageRoute(builder: (context)=> ReservationPage(
                                         title: selectedInst,instructor: selected)));
                                 },
-                                contentPadding: EdgeInsets.symmetric(horizontal: 15),
-                                trailing: Icon(Icons.access_alarm_rounded),
-                                leading: Icon(Icons.insert_invitation_rounded),
+                                contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+                                trailing: const Icon(Icons.access_alarm_rounded),
+                                leading: const Icon(Icons.insert_invitation_rounded),
                                 subtitle: Text(instructors['email']),
                                 title: Text('${instructors['name']} ${instructors['surname']}'),
                               ),
@@ -86,9 +82,9 @@ class _HomePageState extends State<HomePage>{
                       style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.blueAccent)),
                         onPressed: () {
                           Navigator.push(context,
-                              MaterialPageRoute(builder: (context) => LoginPage()));
+                              MaterialPageRoute(builder: (context) => const LoginPage()));
                         },
-                        child: Text("Login"),
+                        child: const Text("Login"),
                       ),
                     ),
                     Flexible(
@@ -99,9 +95,9 @@ class _HomePageState extends State<HomePage>{
                           onPressed: () {
 
                             Navigator.push(context,
-                                MaterialPageRoute(builder: (context) => SignupPage()));
+                                MaterialPageRoute(builder: (context) => const SignupPage()));
                           },
-                          child: Text("Sign-Up"),
+                          child: const Text("Sign-Up"),
                         )),Flexible(
                         fit: FlexFit.tight,
                         flex: 4,
@@ -110,7 +106,7 @@ class _HomePageState extends State<HomePage>{
                           onPressed: () {
                             _authService.logOut();
                           },
-                          child: Text("Log-Out"),
+                          child: const Text("Log-Out"),
                         ))
                   ],
                 ),
@@ -120,20 +116,16 @@ class _HomePageState extends State<HomePage>{
   }
 
   Instructor buildInstructor(QueryDocumentSnapshot inst){
-    print('TOKEN');
-    print(inst['fcmToken']);
-    return Instructor.withFcm(inst['id'],
-        inst['name'],
-        inst['email'],
-        inst['surname'],"Computer",inst['fcmToken']);
+    if(inst['fcmToken'] == null){
+      return Instructor.withValues(inst['id'], inst['name'], inst['email'], inst['surname'], "Computer");
+    }else{
+      return Instructor.withFcm(inst['id'],
+          inst['name'],
+          inst['email'],
+          inst['surname'],"Computer",inst['fcmToken']);
+    }
   }
-
-
-
   issAdmin(){
     FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get();
   }
-
-
-
 }

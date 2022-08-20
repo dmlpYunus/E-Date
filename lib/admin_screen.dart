@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutterfirebasedeneme/instructor_register_screen.dart';
 import 'package:flutterfirebasedeneme/login_validator.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
 
 class adminScreen extends StatefulWidget with AccountValidationMixin{
   const adminScreen({Key? key}) : super(key: key);
-
   @override
   State<adminScreen> createState() => _adminScreenState();
 }
@@ -17,16 +17,9 @@ class _adminScreenState extends State<adminScreen> {
     return Scaffold(
       body: Container(
         child:Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            ElevatedButton(onPressed: (){
-
-              },
-          child: Text("Register Instructor")),
-            ElevatedButton(onPressed: (){
-
-            },
-                child: Text("Register Instructor"))
+            buildRegisterInstructorButton(),
+            buildSeeAllAppointmentsButton(),
           ],
         ),
       ),
@@ -35,7 +28,7 @@ class _adminScreenState extends State<adminScreen> {
 
   buildRegisterInstructorButton(){
     return ElevatedButton(onPressed: (){
-
+      Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorRegister()));
     },
         child: Text("Register Instructor"));
   }

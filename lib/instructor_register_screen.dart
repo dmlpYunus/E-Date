@@ -3,14 +3,14 @@ import 'package:flutter/material.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/login_validator.dart';
 
-class SignupPage extends StatefulWidget {
-  const SignupPage({Key? key}) : super(key: key);
+class InstructorRegister extends StatefulWidget {
+  const InstructorRegister({Key? key}) : super(key: key);
+
   @override
-  State<SignupPage> createState() => _SignUpPageState();
+  State<InstructorRegister> createState() => _InstructorRegisterState();
 }
 
-class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
-  @override
+class _InstructorRegisterState extends State<InstructorRegister> with AccountValidationMixin {
   AuthService authService = AuthService();
   final emailController = TextEditingController();
   final passController = TextEditingController();
@@ -18,6 +18,8 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
   final surnameController = TextEditingController();
 
   var key = GlobalKey<FormState>();
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: Form(
@@ -27,7 +29,7 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text("Welcome To E-Date", textAlign: TextAlign.center,style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.blueGrey),),
+              const Text("Enter Credentials To Register Instructors", textAlign: TextAlign.center,style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.blueGrey),),
               const SizedBox(height: 20),
               buildNameText(),
               const SizedBox(height: 20),
@@ -39,11 +41,29 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
               const SizedBox(height: 20),
               buildSignUpButton(),
               const SizedBox(height: 20),
-              buildLoginPageButton(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget buildSignUpButton() {
+    return ElevatedButton(
+      onPressed: () async {
+        if (key.currentState!.validate()) {
+          key.currentState!.save();
+          try {
+            await authService.RegisterInstructor(emailController.text, passController.text,nameController.text,surnameController.text).then((value) =>
+            {
+              displaySnackBar('Instructor Register Successfull')
+            });
+          } on FirebaseAuthException catch (error) {
+            displaySnackBar(error.message!);
+          }
+        }
+      },
+      child: const Text("Sign-Up"),
     );
   }
 
@@ -61,7 +81,7 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
       keyboardType: TextInputType.emailAddress,
       validator: validateMail,
       decoration: const InputDecoration(
-          labelText: ("E-Mail"), hintText: ("xxxx@isik.edu.tr")),
+          labelText: ("E-Mail"), hintText: ("xxxx@isikun.edu.tr")),
     );
   }
 
@@ -95,26 +115,6 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
     );
   }
 
-  Widget buildSignUpButton() {
-    return ElevatedButton(
-      onPressed: () async {
-        if (key.currentState!.validate()) {
-          key.currentState!.save();
-          try {
-            await authService.signUp(emailController.text, passController.text).then((value) =>
-            {
-              value!.reload(),
-              //authService.signIn(emailController.text, passController.text)
-            });
-          } on FirebaseAuthException catch (error) {
-            displaySnackBar(error.message!);
-          }
-        }
-      },
-      child: const Text("Sign-Up"),
-    );
-  }
-
   void displaySnackBar(String message) {
     var snackBar = SnackBar(
       content: Text(
@@ -131,11 +131,5 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  Widget buildLoginPageButton() {
-    return MaterialButton(
-        onPressed: () {
-          Navigator.pop(context);
-        },
-        child: const Text("Already Have An Account?"));
-  }
+
 }

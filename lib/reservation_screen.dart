@@ -4,6 +4,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterfirebasedeneme/instructor_homepage.dart';
+import 'package:flutterfirebasedeneme/main.dart';
 import 'Model/instructor.dart';
 import 'utils/colors_util.dart';
 import 'utils/date_utils.dart' as date_util;
@@ -12,19 +14,21 @@ import 'package:http/http.dart' as http;
 class ReservationPage extends StatefulWidget {
   Instructor instructor;
   String title;
-  ReservationPage({Key? key, required this.title,required this.instructor}) : super(key: key);
+  ReservationPage({Key? key, required this.title, required this.instructor})
+      : super(key: key);
 
   @override
-  _ReservationPageState createState() => _ReservationPageState(title,instructor);
+  _ReservationPageState createState() =>
+      _ReservationPageState(title, instructor);
 }
 
 class _ReservationPageState extends State<ReservationPage> {
   String instName;
   Instructor instructor;
-  _ReservationPageState(this.instName,this.instructor);
+  _ReservationPageState(this.instName, this.instructor);
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  late String name,surname,id,email,role;
+  late String name, surname, id, email, role;
   late String token;
 
   double width = 0.0;
@@ -34,12 +38,11 @@ class _ReservationPageState extends State<ReservationPage> {
   late DateTime selectedDay;
   List<DateTime> currentMonthList = List.empty();
   List monthDays = date_util.DateUtils.daysInMonth(DateTime.now());
-  late int selectedHourIndex,selectedMonthIndex;
-  List <DateTime> instructorAppointmentsList = [];
+  late int selectedHourIndex, selectedMonthIndex;
+  List<DateTime> instructorAppointmentsList = [];
   DateTime currentDateTime = DateTime.now();
   List<String> todos = <String>[];
   TextEditingController controller = TextEditingController();
-
 
   @override
   Widget build(BuildContext context) {
@@ -56,8 +59,6 @@ class _ReservationPageState extends State<ReservationPage> {
         floatingActionButton: floatingActionBtn());
   }
 
-
-
   @override
   void initState() {
     super.initState();
@@ -65,59 +66,65 @@ class _ReservationPageState extends State<ReservationPage> {
     currentMonthList.sort((a, b) => a.day.compareTo(b.day));
     currentMonthList = currentMonthList.toSet().toList();
     scrollController =
-        ScrollController(initialScrollOffset: 70.0 * currentDateTime.day +1 );
-    selectedDay = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);
-    selectedDateTime = DateTime(currentDateTime.year,currentDateTime.month,currentDateTime.day);
+        ScrollController(initialScrollOffset: 70.0 * currentDateTime.day + 1);
+    selectedDay = DateTime(
+        currentDateTime.year, currentDateTime.month, currentDateTime.day);
+    selectedDateTime = DateTime(
+        currentDateTime.year, currentDateTime.month, currentDateTime.day);
     getToken();
     getAppointmentTable();
     loadUserData();
   }
 
-  loadUserData() async{
-    await _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get().then((snapshot) {
+  loadUserData() async {
+    await _firestore
+        .collection('users')
+        .doc(_firebaseAuth.currentUser!.uid)
+        .get()
+        .then((snapshot) {
       setState(() {
         email = snapshot.data()!['email'];
-        print(snapshot.data()!['email']);
         name = snapshot.data()!['name'];
-        print(snapshot.data()!['name']);
-        id= snapshot.data()!['studentId'];
-        print(snapshot.data()!['studentId']);
+        id = snapshot.data()!['studentId'];
         surname = snapshot.data()!['surname'];
-        print(snapshot.data()!['surname']);
         role = snapshot.data()!['role'];
       });
     });
   }
 
-   getAppointmentTable  () async  {
-     await _firestore.collection('appointments').
-    where('dateTimeDay',isEqualTo: selectedDay).where('instructorId',isEqualTo: instructor.id).get().then((snapshot) {
+  getAppointmentTable() async {
+    await _firestore
+        .collection('appointments')
+        .where('dateTimeDay', isEqualTo: selectedDay)
+        .where('instructorId', isEqualTo: instructor.id)
+        .get()
+        .then((snapshot) {
       instructorAppointmentsList.clear();
-      if(snapshot.size == 0){
+      if (snapshot.size == 0) {
         print(selectedDay);
         print("EMPTY");
         return;
       }
-      for(int i =0;i<snapshot.size;i++){
-       instructorAppointmentsList.add(snapshot.docs[i].get('dateTime').toDate());
-      }print(instructorAppointmentsList);
-    }
-    );//return instructorAppointments;
+      for (int i = 0; i < snapshot.size; i++) {
+        instructorAppointmentsList
+            .add(snapshot.docs[i].get('dateTime').toDate());
+      }
+      print(instructorAppointmentsList);
+    });
   }
 
   List<DateTime> buildHoursList() {
     List<DateTime> hours = [];
-    for(int i = 8;i<=20;i++){
+    for (int i = 8; i <= 20; i++) {
       hours.add(selectedDay.add(Duration(hours: i)));
     }
     return hours;
   }
 
-
-
-  void hoursViewOnTap(int index){
+  void hoursViewOnTap(int index) {
     selectedHourIndex = index;
-    selectedDateTime = selectedDay.add(Duration(hours: buildHoursList()[index].hour));
+    selectedDateTime =
+        selectedDay.add(Duration(hours: buildHoursList()[index].hour));
     print("final Date :  $selectedDateTime");
 
     print("UTC LOCAL");
@@ -128,7 +135,8 @@ class _ReservationPageState extends State<ReservationPage> {
     print("HOURS VİEW TAP");
     print(instructorAppointmentsList);
   }
-  void montViewOnTap(int index){
+
+  void montViewOnTap(int index) {
     //currentDateTime = currentMonthList[index];
     currentDateTime = date_util.DateUtils.daysInMonth(currentDateTime)[index];
 
@@ -147,49 +155,40 @@ class _ReservationPageState extends State<ReservationPage> {
       width: width,
       height: height * 0.60,
       child: ListView.builder(
-        itemCount:  buildHoursList().length-1,
+        itemCount: buildHoursList().length - 1,
         itemBuilder: (context, index) {
           return ListTile(
-            title: Text('${buildHoursList()[index].hour}.00 - ${buildHoursList()[index+1].hour}.00',
-                style:const TextStyle(
+            title: Text(
+                '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00',
+                style: const TextStyle(
                   color: Colors.blueGrey,
                   fontSize: 22,
                   fontWeight: FontWeight.bold,
-                )
-            ),
+                )),
             autofocus: true,
-            contentPadding: EdgeInsets.only(right: 15,left: 15),
-            leading: const Icon(Icons.access_time,color: Colors.grey,size: 28,),
-            trailing: (instructorAppointmentsList.contains(buildHoursList()[index]))
-                ? const Text("Busy",style: TextStyle(color: Colors.redAccent))
-                : const Text("Free",style: TextStyle(color: Colors.green)),
-            shape: Border(
-              top: BorderSide(
-                color: Colors.grey.withOpacity(0.2)
-              ),
-                bottom: BorderSide(
-            color: Colors.grey.withOpacity(0.2)
-          )
+            contentPadding: EdgeInsets.only(right: 15, left: 15),
+            leading: const Icon(
+              Icons.access_time,
+              color: Colors.grey,
+              size: 28,
             ),
+            trailing: (instructorAppointmentsList
+                    .contains(buildHoursList()[index]))
+                ? const Text("Busy", style: TextStyle(color: Colors.redAccent))
+                : const Text("Free", style: TextStyle(color: Colors.green)),
+            shape: Border(
+                top: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                bottom: BorderSide(color: Colors.grey.withOpacity(0.2))),
             onTap: () {
               setState(() {
                 hoursViewOnTap(index);
-                /*currentDateTime = currentMonthList[index];
-                selectedDay = currentDateTime;
-                clearDateTime(selectedDay);
-                print(selectedDay);
-                selectedDateTime = selectedDay;
-                buildHoursList();
-                getAppointmentTable();*/
               });
             },
-
           );
         },
       ),
     );
   }
-
 
   Widget todoList() {
     return Container(
@@ -228,12 +227,12 @@ class _ReservationPageState extends State<ReservationPage> {
     );
   }
 
-  previousMonth(){
+  previousMonth() {
     currentDateTime = date_util.DateUtils.previousMonth(currentDateTime);
     selectedDateTime = currentDateTime;
   }
 
-  nextMonth(){
+  nextMonth() {
     currentDateTime = date_util.DateUtils.nextMonth(currentDateTime);
     selectedDateTime = currentDateTime;
   }
@@ -246,9 +245,8 @@ class _ReservationPageState extends State<ReservationPage> {
         children: [
           GestureDetector(
             child: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 30, color: Colors.deepOrangeAccent)
-            ,
-            onTap: (){
+                size: 30, color: Colors.deepOrangeAccent),
+            onTap: () {
               setState(() {
                 previousMonth();
               });
@@ -264,14 +262,13 @@ class _ReservationPageState extends State<ReservationPage> {
           ),
           const SizedBox(width: 20),
           GestureDetector(
-            child: const Icon(Icons.arrow_forward_ios,
-                size: 30, color: Colors.deepOrangeAccent),
-            onTap: (){
-              setState(() {
-                nextMonth();
-              });
-            }
-          ),
+              child: const Icon(Icons.arrow_forward_ios,
+                  size: 30, color: Colors.deepOrangeAccent),
+              onTap: () {
+                setState(() {
+                  nextMonth();
+                });
+              }),
         ],
       ),
     );
@@ -417,38 +414,42 @@ class _ReservationPageState extends State<ReservationPage> {
           decoration: BoxDecoration(
               shape: BoxShape.circle,
               gradient: LinearGradient(
-                  colors:
-                  ( buildHoursList().contains(selectedDateTime)  && !instructorAppointmentsList.contains(selectedDateTime)) ? [
-                    Colors.green.withOpacity(0.8),
-                    Colors.green.withOpacity(0.9),
-                    Colors.green.withOpacity(1)
-                  ] :
-                  [
-                    Colors.red.withOpacity(0.8),
-                    Colors.red.withOpacity(0.9),
-                    Colors.red.withOpacity(1)
-                  ],
+                  colors: (buildHoursList().contains(selectedDateTime) &&
+                          !instructorAppointmentsList
+                              .contains(selectedDateTime))
+                      ? [
+                          Colors.green.withOpacity(0.8),
+                          Colors.green.withOpacity(0.9),
+                          Colors.green.withOpacity(1)
+                        ]
+                      : [
+                          Colors.red.withOpacity(0.8),
+                          Colors.red.withOpacity(0.9),
+                          Colors.red.withOpacity(1)
+                        ],
                   begin: const FractionalOffset(0.0, 0.0),
                   end: const FractionalOffset(0.0, 1.0),
                   stops: const [0.0, 0.5, 1.0],
                   tileMode: TileMode.clamp)),
-          child: (buildHoursList().contains(selectedDateTime)&& !instructorAppointmentsList.contains(selectedDateTime) )
+          child: (buildHoursList().contains(selectedDateTime) &&
+                  !instructorAppointmentsList.contains(selectedDateTime))
               ? const Icon(
-            Icons.done_outlined,
-            size: 30,
-          )  : const Icon(
-            Icons.cancel_outlined,
-            size: 30,
-        ),
+                  Icons.done_outlined,
+                  size: 30,
+                )
+              : const Icon(
+                  Icons.cancel_outlined,
+                  size: 30,
+                ),
         ),
         onPressed: () {
-          if(instructorAppointmentsList.contains(buildHoursList()[selectedHourIndex])){
+          Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorHomepage()));
+          /*if (instructorAppointmentsList
+              .contains(buildHoursList()[selectedHourIndex])) {
             displayErrorDialog("Error", "Selected Slot Not Available", context);
-          }else{
+          } else {
             createAppointment(selectedDateTime, id, name, surname, instructor);
-          }
-
-
+          }*/
         },
       ),
     );
@@ -470,8 +471,9 @@ class _ReservationPageState extends State<ReservationPage> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
-  createAppointment(DateTime dateTime,String studentId,String studentName,String studentSurname,Instructor instructor) async {
-    Map <String,dynamic> appointment  = {};
+  createAppointment(DateTime dateTime, String studentId, String studentName,
+      String studentSurname, Instructor instructor) async {
+    Map<String, dynamic> appointment = {};
     appointment['dateTime'] = dateTime;
     appointment['appointmentRegisterTime'] = DateTime.now();
     appointment['dateTimeDay'] = selectedDay;
@@ -480,14 +482,19 @@ class _ReservationPageState extends State<ReservationPage> {
     appointment['studentId'] = studentId;
     appointment['studentName'] = studentName;
     appointment['studentSurname'] = studentSurname;
-    await FirebaseFirestore.instance.collection('appointments').add(appointment).whenComplete(() =>
-    displaySuccessfullDialog('Appointment Request Sent To ${instructor.name}', '${instructor.name}\n'
-        '${dateTime.toString()}', context)
-    );
+    appointment['status'] = 'pending';
+    await FirebaseFirestore.instance
+        .collection('appointments')
+        .add(appointment)
+        .whenComplete(() => displaySuccessfullDialog(
+            'Appointment Request Sent To ${instructor.name}',
+            '${instructor.name}\n'
+                '${dateTime.toString()}',
+            context));
     sendNotification(token);
   }
 
-  DateTime clearDateTime(DateTime dateTime){
+  DateTime clearDateTime(DateTime dateTime) {
     dateTime.subtract(Duration(
       hours: dateTime.hour,
       minutes: dateTime.minute,
@@ -495,17 +502,19 @@ class _ReservationPageState extends State<ReservationPage> {
     return dateTime;
   }
 
-  void displaySuccessfullDialog(String title, String message, BuildContext context) {
+  void displaySuccessfullDialog(
+      String title, String message, BuildContext context) {
     var alert = AlertDialog(
       title: Text(title),
       content: Text(message),
-        actions: [
-          ElevatedButton(onPressed: (){
-            Navigator.pop(context);
-            Navigator.pop(context);
-          }, child: const Text('OKAY'))
-        ],
-
+      actions: [
+        ElevatedButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pop(context);
+            },
+            child: const Text('OKAY'))
+      ],
     );
     showDialog(context: context, builder: (BuildContext context) => alert);
   }
@@ -519,43 +528,43 @@ class _ReservationPageState extends State<ReservationPage> {
   }
 
   getToken() async {
-    FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get().then((value){
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
       token = value.get('fcmToken').toString();
     });
   }
 
   void sendNotification(String token) async {
-    try{
-      await http.post(Uri.parse('https://fcm.googleapis.com/fcm/send'),
-        headers: <String,String>{
-        'Content-Type' : 'application/json',
-          'Authorization' : 'key=AAAAg6ILid8:APA91bEV1G0iHc580oX91li0Co1qwPiZmOmjCLHMaul4Xa64uPN8IK19XgwLmtruHpk8X8EDGUwSxgnVITWgNwipRBlPuK9JJDJhcUn8YOZoEidHNlhlfhZNLZNqCYZ1QP7d0i2gKSfU'
-        },body: jsonEncode(
-            <String,dynamic>{
-              'notification' : <String,dynamic>{
-                'body' : 'Test Body',
-                'title' : 'Test Title 2'
-              },
-              'priority' : 'high',
-              'data' : <String,dynamic>{
-                'click_action' : 'FLUTTER_NOTIFICATION_CLICK',
-                'id' : '1',
-                'status' : 'done'
-              },
-              'to' : token,
+    try {
+      await http.post(
+        Uri.parse('https://fcm.googleapis.com/fcm/send'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Authorization':
+              'key=AAAAg6ILid8:APA91bEV1G0iHc580oX91li0Co1qwPiZmOmjCLHMaul4Xa64uPN8IK19XgwLmtruHpk8X8EDGUwSxgnVITWgNwipRBlPuK9JJDJhcUn8YOZoEidHNlhlfhZNLZNqCYZ1QP7d0i2gKSfU'
+        },
+        body: jsonEncode(
+          <String, dynamic>{
+            'notification': <String, dynamic>{
+              'body': 'You Have An Appointment Request',
+              'title': 'Appointment Request'
             },
-          ),
+            'priority': 'high',
+            'data': <String, dynamic>{
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'id': '1',
+              'status': 'done'
+            },
+            'to': token,
+          },
+        ),
       );
       print("DONE!");
-
-    }catch (e){
+    } catch (e) {
       print(e.toString());
     }
   }
-
-
-
-
-
-
 }
