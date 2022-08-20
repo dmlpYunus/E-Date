@@ -1,7 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:flutterfirebasedeneme/appointment_approval_screen.dart';
 import 'utils/date_utils.dart' as date_utils ;
-import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 
 class InstructorHomepage extends StatefulWidget {
   const InstructorHomepage({Key? key}) : super(key: key);
@@ -22,8 +22,25 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
     return Scaffold(
+      backgroundColor: Colors.red,
+      appBar: AppBar(
+        title: const Text('E-Date'),
+        centerTitle: true,
+        actions:  [
+          InkWell(
+            child: Container(
+              padding: const EdgeInsets.all(5),
+                child: const Icon(Icons.accessibility_rounded)),
+            onTap: (){
+              print('asdas');
+            },
+          ),
+        ],
+      ),
+
+        drawer: buildDrawer(),
         body:Stack(
-          children: [buildInstructorNotifications(),],
+          children: [buildInstructorNotifications(),buildInstructorWelcome()],
         )
 
     );
@@ -36,26 +53,28 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
       color: Colors.blueAccent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [Text('Welcome')],
+        children: const [
+          Text('Welcome'),
+          Text('Todays Appointments')
+        ],
       ),
     );
   }
 
   timeStampToDateTime(Timestamp timeStamp){
     return '${date_utils.DateUtils.fullDayFormat(timeStamp.toDate())} ${timeStamp.toDate().hour.toString()}.00';
-
   }
 
   buildInstructorNotifications() {
     return Container(
-      margin: EdgeInsets.only(top : height*0.25),
+      margin: EdgeInsets.only(top : height*0.1),
       width: width,
-      height: height*0.75,
+      height: height*0.5,
       child: Column(
         children: [
           Expanded(
             child: StreamBuilder(
-                stream: appointments.where('dateTime',isGreaterThanOrEqualTo: DateTime.now()).snapshots(),
+                stream: appointments.where('dateTime',isLessThan: DateTime.now()).snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(
@@ -88,8 +107,59 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
   buildAppointments() async {
     Query<Map<String, dynamic>> queryDocumentSnapshot = firebaseFirestore
         .collection("appointments")
-        .where('instructorId', isEqualTo: 'eGOUMz7bh0hQERLSOYcnxZjQC5j1');
+        .where('instructorId', isEqualTo: 'eGOUMz7bh0hQERLSOYcnxZjQC5j1').where('dateTime', isEqualTo: DateTime.now());
     QuerySnapshot<Map<String, dynamic>> doc = await queryDocumentSnapshot.get();
     return doc;
+  }
+
+  buildDrawer(){
+    return Drawer(
+      width: width*0.75,
+      backgroundColor: Colors.blueAccent,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children:[
+          buildUserInfo(),
+          buildDrawerButtons(),
+        ],
+      ),
+    );
+  }
+
+  buildUserInfo(){
+    return Container(
+        width: width*0.75,
+        height: height*0.2,
+        color: Colors.red,
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text('Ali Huzur'),
+            Text('alihuzur@isikun.edu.tr')
+          ],
+        )
+    );
+  }
+
+  buildDrawerButtons(){
+    return Container(
+
+      width: width*0.75,
+      height: height*0.5,
+      color: Colors.greenAccent,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          ElevatedButton(
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => AppointmentApproval()));
+              }, child: Text('Pending Requests')),
+          ElevatedButton(
+              onPressed: (){
+
+              }, child: Text('Account Settings'))
+        ],
+      ),
+    );
   }
 }
