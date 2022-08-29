@@ -2,15 +2,15 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'utils/date_utils.dart' as date_utils ;
 
-class AppointmentApproval extends StatefulWidget {
-  const AppointmentApproval({Key? key}) : super(key: key);
+class InstPastAppointments extends StatefulWidget {
+  const InstPastAppointments({Key? key}) : super(key: key);
 
   @override
-  State<AppointmentApproval> createState() => _AppointmentApprovalState();
+  State<InstPastAppointments> createState() => _InstPastAppointmentsState();
 
 }
 
-class _AppointmentApprovalState extends State<AppointmentApproval> {
+class _InstPastAppointmentsState extends State<InstPastAppointments> {
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   double width = 0.0;
   double height = 0.0;
@@ -23,13 +23,13 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
     height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        title: Text('Pending Appointment Requests'),
+        title: Text('Past Appointments'),
       ),
-          body: Stack(
-            children: [
-              buildPendingAppointmentsList()
-            ],
-          ),
+      body: Stack(
+        children: [
+          buildPendingAppointmentsList()
+        ],
+      ),
     );
   }
 
@@ -44,12 +44,12 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
             child: StreamBuilder(
                 stream: appointments
                     .where('dateTime',isLessThan: DateTime.now())
-                    .where('status',isEqualTo: 'pending').orderBy('dateTime',descending: true)
+                    .where('status',isEqualTo: 'done').orderBy('dateTime',descending: true)
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(
-                      child: Text("No Appointment Requests Available"),
+                      child: Text("No Past Appointments Available"),
                     );
                   }
                   return ListView(

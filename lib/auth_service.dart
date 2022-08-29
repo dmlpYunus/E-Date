@@ -1,5 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/material.dart';
+import 'package:flutterfirebasedeneme/login_screen.dart';
 
 
 class AuthService {
@@ -27,7 +29,9 @@ class AuthService {
   }
 
   logOut() {
-    _mauth.signOut().then((value) => {});
+    _mauth.signOut().then((value) => {
+       LoginPage()
+    });
   }
 
    Future<String> getCurrentUserId() async {

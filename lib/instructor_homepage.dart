@@ -1,6 +1,11 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfirebasedeneme/appointment_approval_screen.dart';
+import 'package:flutterfirebasedeneme/auth_service.dart';
+import 'package:flutterfirebasedeneme/instructor_account_settings_screen.dart';
+import 'package:flutterfirebasedeneme/instructor_past_appointments_screen.dart';
+import 'package:flutterfirebasedeneme/instructor_upcoming_appointments_screen.dart';
 import 'utils/date_utils.dart' as date_utils ;
 
 class InstructorHomepage extends StatefulWidget {
@@ -11,18 +16,28 @@ class InstructorHomepage extends StatefulWidget {
 }
 
 class _InstructorHomepageState extends State<InstructorHomepage> {
-  FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
+  final _firebaseAuth = FirebaseAuth.instance;
+  final _firestore = FirebaseFirestore.instance;
+  List<DateTime> instructorAppointmentsList = [];
+  late final currentUser;
+  AuthService authService = AuthService();
+  late DateTime today;
   double width = 0.0;
   double height = 0.0;
   CollectionReference appointments =
       FirebaseFirestore.instance.collection("appointments");
+  @override
+  void initState(){
+    super.initState();
+    today = DateTime(DateTime.now().year,DateTime.now().month,DateTime.now().day);
+    getAppointmentTable();
+  }
 
   @override
   Widget build(BuildContext context) {
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
     return Scaffold(
-      backgroundColor: Colors.red,
       appBar: AppBar(
         title: const Text('E-Date'),
         centerTitle: true,
@@ -30,19 +45,17 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
           InkWell(
             child: Container(
               padding: const EdgeInsets.all(5),
-                child: const Icon(Icons.accessibility_rounded)),
+                child: const Icon(Icons.notifications)),
             onTap: (){
-              print('asdas');
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const AppointmentApproval()));
             },
           ),
         ],
       ),
-
         drawer: buildDrawer(),
         body:Stack(
-          children: [buildInstructorNotifications(),buildInstructorWelcome()],
+          children: [/*buildInstructorNotifications()*/buildInstructorWelcome(),hoursView()],
         )
-
     );
   }
 
@@ -50,12 +63,11 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     return Container(
       height: height * 0.1,
       width: width,
-      color: Colors.blueAccent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [
           Text('Welcome'),
-          Text('Todays Appointments')
+          Text('Today\'s appointments')
         ],
       ),
     );
@@ -74,7 +86,7 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
         children: [
           Expanded(
             child: StreamBuilder(
-                stream: appointments.where('dateTime',isLessThan: DateTime.now()).snapshots(),
+                stream: appointments.where('dateTime',isGreaterThanOrEqualTo: DateTime.now()).snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(
@@ -105,9 +117,9 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
   }
 
   buildAppointments() async {
-    Query<Map<String, dynamic>> queryDocumentSnapshot = firebaseFirestore
+    Query<Map<String, dynamic>> queryDocumentSnapshot = _firestore
         .collection("appointments")
-        .where('instructorId', isEqualTo: 'eGOUMz7bh0hQERLSOYcnxZjQC5j1').where('dateTime', isEqualTo: DateTime.now());
+        .where('instructorId', isEqualTo: await authService.getCurrentUserId()).where('dateTime', isEqualTo: DateTime.now());
     QuerySnapshot<Map<String, dynamic>> doc = await queryDocumentSnapshot.get();
     return doc;
   }
@@ -115,7 +127,6 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
   buildDrawer(){
     return Drawer(
       width: width*0.75,
-      backgroundColor: Colors.blueAccent,
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children:[
@@ -130,10 +141,9 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     return Container(
         width: width*0.75,
         height: height*0.2,
-        color: Colors.red,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: [
+          children: const [
             Text('Ali Huzur'),
             Text('alihuzur@isikun.edu.tr')
           ],
@@ -141,23 +151,97 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     );
   }
 
+  List<DateTime> buildHoursList() {
+    List<DateTime> hours = [];
+    for (int i = 8; i <= 20; i++) {
+      hours.add(today.add(Duration(hours: i)));
+    }
+    return hours;
+  }
+
+  getAppointmentTable() async {
+    print(_firebaseAuth.currentUser!.uid);
+    await _firestore
+        .collection('appointments')
+        .where('dateTimeDay', isEqualTo: today)
+        //.where('instructorId', isEqualTo:_firebaseAuth.currentUser!.uid)
+        .get()
+        .then((snapshot) {
+          print(snapshot.size);
+      instructorAppointmentsList.clear();
+      if (snapshot.size == 0) {
+        print(today);
+        print("EMPTY");
+        return;
+      }
+      for (int i = 0; i < snapshot.size; i++) {
+        instructorAppointmentsList
+            .add(snapshot.docs[i].get('dateTime').toDate());
+        print(snapshot.docs[i].get('studentName').toString());
+      }
+    });
+  }
+
+  Widget hoursView() {
+    return Container(
+      margin: EdgeInsets.fromLTRB(10, height * 0.1, 15, 15),
+      width: width,
+      height: height * 0.90,
+      child: ListView.builder(
+        itemCount: buildHoursList().length - 1,
+        itemBuilder: (context, index) {
+          return ListTile(
+            title: Text(
+                '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00',
+                style: const TextStyle(
+                  color: Colors.blueGrey,
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                )),
+            autofocus: true,
+            contentPadding: const EdgeInsets.only(right: 15, left: 15),
+            leading: const Icon(
+              Icons.access_time,
+              color: Colors.grey,
+              size: 28,
+            ),
+            trailing: (instructorAppointmentsList
+                .contains(buildHoursList()[index]))
+                ? const Text("Busy", style: TextStyle(color: Colors.redAccent))
+                : const Text("Free", style: TextStyle(color: Colors.green)),
+            shape: Border(
+                top: BorderSide(color: Colors.grey.withOpacity(0.2)),
+                bottom: BorderSide(color: Colors.grey.withOpacity(0.2))),
+            onTap: () {
+              setState(() {
+                //hoursViewOnTap(index);
+              });
+            },
+          );
+        },
+      ),
+    );
+  }
+
   buildDrawerButtons(){
     return Container(
-
       width: width*0.75,
       height: height*0.5,
-      color: Colors.greenAccent,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           ElevatedButton(
               onPressed: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => AppointmentApproval()));
-              }, child: Text('Pending Requests')),
+                  Navigator.push(context, MaterialPageRoute(builder: (context) => const InstPastAppointments()));
+              }, child: const Text('Past Appointments')),
           ElevatedButton(
               onPressed: (){
-
-              }, child: Text('Account Settings'))
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const InstUpcomingAppointments()));
+              }, child: const Text('Upcoming Appointments')),
+          ElevatedButton(
+              onPressed: (){
+                Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorAccountSettings()));
+              }, child: const Text('Account Settings'))
         ],
       ),
     );

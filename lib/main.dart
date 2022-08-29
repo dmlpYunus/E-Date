@@ -8,28 +8,29 @@ import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/fcm/fcm_background_handler.dart';
-import 'package:flutterfirebasedeneme/home_page.dart';
+import 'package:flutterfirebasedeneme/instructor_homepage.dart';
+import 'package:flutterfirebasedeneme/student_home_page.dart';
 import 'package:flutterfirebasedeneme/login_screen.dart';
 import 'firebase_options.dart';
 import 'package:http/http.dart' as http;
 
 FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin;
 AndroidNotificationChannel? channel;
-Map<String,dynamic>? currentUser;
+Map<String, dynamic>? currentUser;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
-    options
-        : DefaultFirebaseOptions.currentPlatform,
+    options: DefaultFirebaseOptions.currentPlatform,
   );
   FirebaseMessaging.onBackgroundMessage(firebaseBackgroundHandler);
 
-
   flutterLocalNotificationsPlugin = FlutterLocalNotificationsPlugin();
-  channel = const AndroidNotificationChannel("e.date", "E-Date",importance: Importance.max);
+  channel = const AndroidNotificationChannel("e.date", "E-Date",
+      importance: Importance.max);
   await flutterLocalNotificationsPlugin!
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+      .resolvePlatformSpecificImplementation<
+          AndroidFlutterLocalNotificationsPlugin>()
       ?.createNotificationChannel(channel!);
   await FirebaseMessaging.instance.setForegroundNotificationPresentationOptions(
     alert: true,
@@ -38,21 +39,25 @@ Future<void> main() async {
   );
   await FirebaseMessaging.instance.getToken().then((value) {
     print('Token $value');
-    var a = {'fcmToken' : value};
-   FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser?.uid).update(a);
+    var a = {'fcmToken': value};
+    FirebaseFirestore.instance
+        .collection("users")
+        .doc(FirebaseAuth.instance.currentUser?.uid)
+        .update(a);
   });
-  FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser?.uid).get().then((value) {
+  FirebaseFirestore.instance
+      .collection("users")
+      .doc(FirebaseAuth.instance.currentUser?.uid)
+      .get()
+      .then((value) {
     currentUser = value.data();
     print(currentUser);
   });
   runApp(MaterialApp(home: MyApp()));
 }
 
-
-
-class MyApp extends StatefulWidget  {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
-
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -65,31 +70,34 @@ class _MyAppState extends State<MyApp> {
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
 
   @override
-  void initState()  {
-      super.initState();
-      FirebaseMessaging.instance.getToken().then((value) {
+  void initState() {
+    super.initState();
+    FirebaseMessaging.instance.getToken().then((value) {
       print('Token $value');
-      var a = {'fcmToken' : value};
-      FirebaseFirestore.instance.collection("users").doc(FirebaseAuth.instance.currentUser?.uid.toString()).update(a);
+      var a = {'fcmToken': value};
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(FirebaseAuth.instance.currentUser?.uid.toString())
+          .update(a);
       printUserRole();
     });
-
-
-
 
     //FirebaseMessaging.instance.subscribeToTopic("demo").then((value) => print('Success'));
     FirebaseMessaging.onMessage.listen((RemoteMessage remoteMessage) {
       RemoteNotification? notification = remoteMessage.notification;
       AndroidNotification? android = remoteMessage.notification?.android;
-      if(notification != null && android!=null){
-        flutterLocalNotificationsPlugin!.show(notification.hashCode,
-            notification.title, notification.body, NotificationDetails(
+      if (notification != null && android != null) {
+        flutterLocalNotificationsPlugin!.show(
+            notification.hashCode,
+            notification.title,
+            notification.body,
+            NotificationDetails(
                 android: AndroidNotificationDetails(
-                    channel!.id,
-                    channel!.name,
-                    icon: 'launcher_background',
-                channelDescription: channel!.description,
-                )));
+              channel!.id,
+              channel!.name,
+              icon: 'launcher_background',
+              channelDescription: channel!.description,
+            )));
       }
     });
   }
@@ -98,21 +106,69 @@ class _MyAppState extends State<MyApp> {
     print(await authService.getCurrentUserRole());
   }
 
+  Future<bool> isStudent() async {
+    return await authService.getCurrentUserRole() == 'student';
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: StreamBuilder<User?>(
+        body :StreamBuilder<User?>(
+            stream: FirebaseAuth.instance.authStateChanges(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return  FutureBuilder(
+                  future: isStudent(),
+                  builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                    if (snapshot.hasData) {
+                      if (snapshot.data!) {
+                        return HomePage();
+                      } else {
+                        return InstructorHomepage();
+                      }
+                    } else {
+                      return LoginPage();
+                    }
+                  },
+                );
+              } else {
+                print('sasa');
+                return LoginPage();
+              }
+            })
+    );
+
+        /*FutureBuilder(
+        future: isStudent(),
+        builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+          if(snapshot.hasData){
+            if(snapshot.data!){
+              return HomePage();
+            }else{
+              return InstructorHomepage();
+            }
+          }else{
+            return LoginPage();
+          }
+        },
+      )*/
+
+        /*StreamBuilder<User?>(
           stream: FirebaseAuth.instance.authStateChanges(),
           builder: (context, snapshot) {
             if(snapshot.hasData){
+              if(authService.getCurrentUserRole() == 'student'){
+                return HomePage();
+              }
+              else{
+                return InstructorHomepage();
+              }
               return HomePage();
             }else{
               return LoginPage();
             }
           }
-      ),
-    );
+      ),*/
+
   }
-
-
 }

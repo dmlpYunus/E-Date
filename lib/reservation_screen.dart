@@ -443,13 +443,13 @@ class _ReservationPageState extends State<ReservationPage> {
                 ),
         ),
         onPressed: () {
-          Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorHomepage()));
-          /*if (instructorAppointmentsList
+          //Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorHomepage()));
+          if (instructorAppointmentsList
               .contains(buildHoursList()[selectedHourIndex])) {
             displayErrorDialog("Error", "Selected Slot Not Available", context);
           } else {
             createAppointment(selectedDateTime, id, name, surname, instructor);
-          }*/
+          }
         },
       ),
     );

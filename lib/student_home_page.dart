@@ -41,7 +41,6 @@ class _HomePageState extends State<HomePage>{
                 Expanded(
                   child: StreamBuilder(
                       stream: instructorsdb.orderBy("name").snapshots(),
-                      //groceries.snapshots(),
                       builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                         if (!snapshot.hasData) {
                           return const Center(
