@@ -198,10 +198,24 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
             stream: _firestore
                 .collection('appointments')
                 .where('dateTimeDay', isEqualTo: today)
+                .where('dateTime',whereIn: buildHoursList().sublist(0,10))
                 .snapshots(),
-            builder: (context, snapshot) {
-              return const ListTile(
-
+            builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+              return  ListTile(
+                title: (
+                true
+                  //snapshot.data!.size != 0 && snapshot.data.docs.where((element) => element.)//&&
+                  //snapshot.data.docs.where((element) => element.get('dateTime').toDate())
+                ) ?
+                Text(
+                    '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00',
+                    style: const TextStyle(
+                      color: Colors.blueGrey,
+                      fontSize: 22,
+                      fontWeight: FontWeight.bold,
+                    ))
+                    :
+                    Text('FREE')
               );
             },
           );
