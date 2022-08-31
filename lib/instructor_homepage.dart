@@ -18,22 +18,15 @@ class InstructorHomepage extends StatefulWidget {
 class _InstructorHomepageState extends State<InstructorHomepage> {
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
+  AuthService authService = AuthService();
   List<dynamic> instructorAppointmentsList = [];
   List<DateTime> todaysAppointmentHours = [];
-  late final currentUser;
-  AuthService authService = AuthService();
+  late var currentUser;
   late DateTime today;
   double width = 0.0;
   double height = 0.0;
   CollectionReference appointments =
       FirebaseFirestore.instance.collection("appointments");
-  @override
-  void initState() {
-    super.initState();
-    today =
-        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    getAppointmentTable();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +69,8 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
       ),
     );
   }
+
+
 
   timeStampToDateTime(Timestamp timeStamp) {
     return '${date_utils.DateUtils.fullDayFormat(timeStamp.toDate())} ${timeStamp.toDate().hour.toString()}.00';
@@ -123,14 +118,7 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     );
   }
 
-  buildAppointments() async {
-    Query<Map<String, dynamic>> queryDocumentSnapshot = _firestore
-        .collection("appointments")
-        .where('instructorId', isEqualTo: await authService.getCurrentUserId())
-        .where('dateTime', isEqualTo: DateTime.now());
-    QuerySnapshot<Map<String, dynamic>> doc = await queryDocumentSnapshot.get();
-    return doc;
-  }
+
 
   buildDrawer() {
     return Drawer(
@@ -145,15 +133,45 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     );
   }
 
-  buildUserInfo() {
+  buildUserInfo()  {
+    return Container(
+        width: width * 0.75,
+        height: height * 0.2,
+        child: FutureBuilder(
+          future: _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get(),
+          builder: (context, AsyncSnapshot<DocumentSnapshot>snapshot) {
+            if(snapshot.hasData){
+              return Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children:  [Text('${snapshot.data!.get('email')}'),
+                  Text('${snapshot.data!.get('role')}')]
+              );
+            }else if(snapshot.hasError){
+              return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children:  [Text('${snapshot.error.toString()}'),
+            Text('${snapshot.data!.get('email')}')]);
+            } else{
+              return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children:  [Text('EMPTY')]);
+            }
+          },
+        )
+    );
+  }
+
+
+  /*buildUserInfo()  {
     return Container(
         width: width * 0.75,
         height: height * 0.2,
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [Text('Ali Huzur'), Text('alihuzur@isikun.edu.tr')],
+          children:  [
+            Text('${currentUser['email']}'), Text('alihuzur@isikun.edu.tr')],
         ));
-  }
+  }*/
 
   List<DateTime> buildHoursList() {
     List<DateTime> hours = [];
@@ -186,6 +204,16 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     });
   }
 
+  @override
+  void initState() {
+    super.initState();
+    today =
+        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
+    getAppointmentTable();
+    currentUser =  authService.getCurrentUser();
+  }
+
+
   Widget hoursView() {
     return Container(
       margin: EdgeInsets.fromLTRB(10, height * 0.1, 15, 15),
@@ -197,61 +225,85 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
           return StreamBuilder(
             stream: _firestore
                 .collection('appointments')
+                .where('instructorId',
+                    isEqualTo: _firebaseAuth.currentUser!.uid)
                 .where('dateTimeDay', isEqualTo: today)
-                .where('dateTime',whereIn: buildHoursList().sublist(0,10))
                 .snapshots(),
-            builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-              return  ListTile(
-                title: (
-                true
-                  //snapshot.data!.size != 0 && snapshot.data.docs.where((element) => element.)//&&
-                  //snapshot.data.docs.where((element) => element.get('dateTime').toDate())
-                ) ?
-                Text(
-                    '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00',
-                    style: const TextStyle(
-                      color: Colors.blueGrey,
-                      fontSize: 22,
-                      fontWeight: FontWeight.bold,
-                    ))
-                    :
-                    Text('FREE')
-              );
+            builder: (
+              context,
+              AsyncSnapshot<QuerySnapshot> snapshot,
+            ) {
+              return ListTile(
+                  leading: (buildHoursList()[index].hour == 8)
+                      ? Text(
+                          '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00      ',
+                          style: const TextStyle(
+                            color: Colors.blueGrey,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ))
+                      : (buildHoursList()[index].hour == 9)
+                          ? Text(
+                              '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00    ',
+                              style: const TextStyle(
+                                color: Colors.blueGrey,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ))
+                          : Text(
+                              '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00 ',
+                              style: TextStyle(
+                                color: Colors.black.withOpacity(0.68),
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              )),
+                  title: (snapshot.hasData &&
+                          snapshot.data!.docs
+                              .where((element) =>
+                                  buildHoursList()[index] ==
+                                  (element.get('dateTime').toDate()))
+                              .isNotEmpty)
+                      ? Text(
+                          snapshot.data!.docs
+                              .where((element) =>
+                                  buildHoursList()[index] ==
+                                  (element.get('dateTime').toDate()))
+                              .first
+                              .get('studentName'),
+                          textAlign: TextAlign.justify,
+                          style: const TextStyle(
+                            color: Colors.lightBlue,
+                            fontSize: 26,
+                            fontWeight: FontWeight.bold,
+                          ))
+                      : const Text('Available',
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 22,
+                            fontWeight: FontWeight.bold,
+                          )),
+                  subtitle: (snapshot.hasData &&
+                          snapshot.data!.docs
+                              .where((element) =>
+                                  buildHoursList()[index] ==
+                                  (element.get('dateTime').toDate()))
+                              .isNotEmpty)
+                      ? Text(
+                          snapshot.data!.docs
+                              .where((element) =>
+                                  buildHoursList()[index] ==
+                                  (element.get('dateTime').toDate()))
+                              .first
+                              .get('studentId'),
+                          textAlign: TextAlign.justify,
+                          style: const TextStyle(
+                            color: Colors.blueGrey,
+                            fontSize: 15,
+                            fontWeight: FontWeight.bold,
+                          ))
+                      : const Text(''));
             },
           );
-
-          /*ListTile(
-            title: (
-                ((!todaysAppointmentHours.contains(buildHoursList()[index]))))
-              ? Text(
-                '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00',
-                style: const TextStyle(
-                  color: Colors.blueGrey,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                ))
-                :
-                Text('${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00'),
-            autofocus: true,
-            contentPadding: const EdgeInsets.only(right: 15, left: 15),
-            leading: const Icon(
-              Icons.access_time,
-              color: Colors.grey,
-              size: 28,
-            ),
-           /* trailing: (instructorAppointmentsList
-                .contains(buildHoursList()[index]))
-                ? const Text("Busy", style: TextStyle(color: Colors.redAccent))
-                : const Text("Free", style: TextStyle(color: Colors.green)),*/
-            shape: Border(
-                top: BorderSide(color: Colors.grey.withOpacity(0.2)),
-                bottom: BorderSide(color: Colors.grey.withOpacity(0.2))),
-            onTap: () {
-              setState(() {
-                //hoursViewOnTap(index);
-              });
-            },
-          );*/
         },
       ),
     );

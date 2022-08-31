@@ -21,7 +21,8 @@ class _InstructorAccountSettingsState extends State<InstructorAccountSettings> {
             ),
             ElevatedButton(onPressed: (){
               authService.logOut();
-              Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
+              Navigator.pop(context);
+              //Navigator.push(context, MaterialPageRoute(builder: (context) => const LoginPage()));
             }, child: const Text('LogOut'))
           ],
         ),

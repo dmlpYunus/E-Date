@@ -37,33 +37,42 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
     return Container(
       margin: EdgeInsets.only(top : height*0.1),
       width: width,
-      height: height*0.5,
+      height: height*0.9,
       child: Column(
         children: [
           Expanded(
             child: StreamBuilder(
                 stream: appointments
-                    .where('dateTime',isLessThan: DateTime.now())
-                    .where('status',isEqualTo: 'pending').orderBy('dateTime',descending: true)
+                    .where('dateTime',isGreaterThanOrEqualTo: DateTime.now())
+                    .where('status',isEqualTo: 'pending')
+                    .orderBy('dateTime',descending: false)
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
                   if (!snapshot.hasData) {
                     return const Center(
                       child: Text("No Appointment Requests Available"),
                     );
+                  }else if (snapshot.hasError){
+                    return Center(
+                      child: Text(snapshot.error.toString()),
+                    );
                   }
                   return ListView(
                     children: snapshot.data!.docs.map((appointments) {
                       return Center(
-                        child: ListTile(
-                          onTap: (){
+                        child: GestureDetector(
+                          onHorizontalDragStart: (details) {
 
                           },
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-                          trailing: const Icon(Icons.access_alarm_rounded),
-                          leading: const Icon(Icons.insert_invitation_rounded),
-                          subtitle: Text(timeStampToDateTime(appointments['dateTime'])),
-                          title: Text('${appointments['studentName']} ${appointments['studentSurname']} ${appointments['studentId']}'),
+                          child: ListTile(
+                            onTap: (){
+                            },
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+                            trailing: const Icon(Icons.access_alarm_rounded),
+                            leading: const Icon(Icons.insert_invitation_rounded),
+                            subtitle: Text(timeStampToDateTime(appointments['dateTime'])),
+                            title: Text('${appointments['studentName']} ${appointments['studentSurname']} ${appointments['studentId']}'),
+                          ),
                         ),
                       );
                     }).toList(),

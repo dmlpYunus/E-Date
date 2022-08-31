@@ -30,7 +30,7 @@ class AuthService {
 
   logOut() {
     _mauth.signOut().then((value) => {
-       LoginPage()
+       //LoginPage()
     });
   }
 
@@ -62,7 +62,7 @@ class AuthService {
         'email': email,
         'password': pass,
         'role': 'instructor',
-        'id': user.user?.uid,
+        'id': user.user?.uid.trim(),
         'name': name,
         'surname': surname
       },

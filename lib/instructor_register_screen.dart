@@ -54,7 +54,8 @@ class _InstructorRegisterState extends State<InstructorRegister> with AccountVal
         if (key.currentState!.validate()) {
           key.currentState!.save();
           try {
-            await authService.RegisterInstructor(emailController.text, passController.text,nameController.text,surnameController.text).then((value) =>
+            await authService.RegisterInstructor(emailController.text.trim(), passController.text.trim()
+                ,nameController.text.trim(),surnameController.text.trim()).then((value) =>
             {
               displaySnackBar('Instructor Register Successfull')
             });

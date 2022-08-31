@@ -477,11 +477,11 @@ class _ReservationPageState extends State<ReservationPage> {
     appointment['dateTime'] = dateTime;
     appointment['appointmentRegisterTime'] = DateTime.now();
     appointment['dateTimeDay'] = selectedDay;
-    appointment['instructorName'] = instructor.name;
-    appointment['instructorId'] = instructor.id;
-    appointment['studentId'] = studentId;
-    appointment['studentName'] = studentName;
-    appointment['studentSurname'] = studentSurname;
+    appointment['instructorName'] = instructor.name.trim();
+    appointment['instructorId'] = instructor.id.trim();
+    appointment['studentId'] = studentId.trim();
+    appointment['studentName'] = studentName.trim();
+    appointment['studentSurname'] = studentSurname.trim();
     appointment['status'] = 'pending';
     await FirebaseFirestore.instance
         .collection('appointments')

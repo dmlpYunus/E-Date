@@ -37,23 +37,29 @@ Future<void> main() async {
     badge: true,
     sound: true,
   );
-  await FirebaseMessaging.instance.getToken().then((value) {
-    print('Token $value');
-    var a = {'fcmToken': value};
+
+  if(FirebaseAuth.instance.currentUser != null) {
+    await FirebaseMessaging.instance.getToken().then((value) {
+      print('Token $value');
+      var a = {'fcmToken': value};
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .update(a);
+    });
+  }
+
+  if(FirebaseAuth.instance.currentUser!= null){
     FirebaseFirestore.instance
         .collection("users")
         .doc(FirebaseAuth.instance.currentUser?.uid)
-        .update(a);
-  });
-  FirebaseFirestore.instance
-      .collection("users")
-      .doc(FirebaseAuth.instance.currentUser?.uid)
-      .get()
-      .then((value) {
-    currentUser = value.data();
-    print(currentUser);
-  });
-  runApp(MaterialApp(home: MyApp()));
+        .get()
+        .then((value) {
+      currentUser = value.data();
+      print(currentUser);
+    });
+  }
+  runApp(const MaterialApp(home: const MyApp()));
 }
 
 class MyApp extends StatefulWidget {
@@ -72,16 +78,17 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
-    FirebaseMessaging.instance.getToken().then((value) {
-      print('Token $value');
-      var a = {'fcmToken': value};
-      FirebaseFirestore.instance
-          .collection("users")
-          .doc(FirebaseAuth.instance.currentUser?.uid.toString())
-          .update(a);
-      printUserRole();
-    });
-
+    if(_firebaseAuth.currentUser != null){
+      FirebaseMessaging.instance.getToken().then((value) {
+        print('Token $value');
+        var a = {'fcmToken': value};
+        FirebaseFirestore.instance
+            .collection("users")
+            .doc(FirebaseAuth.instance.currentUser?.uid.toString())
+            .update(a);
+        printUserRole();
+      });
+    }
     //FirebaseMessaging.instance.subscribeToTopic("demo").then((value) => print('Success'));
     FirebaseMessaging.onMessage.listen((RemoteMessage remoteMessage) {
       RemoteNotification? notification = remoteMessage.notification;
@@ -122,18 +129,18 @@ class _MyAppState extends State<MyApp> {
                   builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
                     if (snapshot.hasData) {
                       if (snapshot.data!) {
-                        return HomePage();
+                        return  HomePage();
                       } else {
-                        return InstructorHomepage();
+                        return  InstructorHomepage();
                       }
                     } else {
-                      return LoginPage();
+                      return  LoginPage();
                     }
                   },
                 );
               } else {
-                print('sasa');
-                return LoginPage();
+                print('NO LOGGED USER');
+                return  LoginPage();
               }
             })
     );
