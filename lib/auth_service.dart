@@ -39,9 +39,14 @@ class AuthService {
       return user!.uid;
   }
 
-  getCurrentUser() async {
-    DocumentSnapshot documentSnapshot =  await _firestore.collection('users').doc(_mauth.currentUser?.uid).get();
+  Future<Map<String, dynamic>?>? getCurrentUser() async  {
+    DocumentSnapshot<Map<String, dynamic>> documentSnapshot =  await _firestore.collection('users').doc(_mauth.currentUser?.uid).get();
     return documentSnapshot.data();
+  }
+
+  getSelectedUser(String uID) async {
+    DocumentSnapshot documentSnapshot =  await _firestore.collection('users').doc(uID).get();
+    return documentSnapshot.data() as Map;
   }
 
   Future<String> getCurrentUserRole() async {

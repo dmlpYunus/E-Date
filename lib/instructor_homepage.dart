@@ -59,6 +59,7 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
         ));
   }
 
+
   buildInstructorWelcome() {
     return Container(
       height: height * 0.1,
@@ -162,17 +163,6 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
   }
 
 
-  /*buildUserInfo()  {
-    return Container(
-        width: width * 0.75,
-        height: height * 0.2,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children:  [
-            Text('${currentUser['email']}'), Text('alihuzur@isikun.edu.tr')],
-        ));
-  }*/
-
   List<DateTime> buildHoursList() {
     List<DateTime> hours = [];
     for (int i = 8; i <= 20; i++) {
@@ -190,8 +180,6 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
         .get()
         .then((snapshot) {
       print(snapshot.size);
-      print(snapshot.docs.first.data());
-      //print(snapshot.docs.asMap().);
       instructorAppointmentsList.clear();
       if (snapshot.size == 0) {
         return;
@@ -223,7 +211,7 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
         itemCount: buildHoursList().length - 1,
         itemBuilder: (context, index) {
           return StreamBuilder(
-            stream: _firestore
+            stream:  _firestore
                 .collection('appointments')
                 .where('instructorId',
                     isEqualTo: _firebaseAuth.currentUser!.uid)

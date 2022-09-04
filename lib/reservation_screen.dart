@@ -64,7 +64,7 @@ class _ReservationPageState extends State<ReservationPage> {
     super.initState();
     currentMonthList = date_util.DateUtils.daysInMonth(currentDateTime);
     currentMonthList.sort((a, b) => a.day.compareTo(b.day));
-    currentMonthList = currentMonthList.toSet().toList();
+    //currentMonthList = currentMonthList.toSet().toList();
     scrollController =
         ScrollController(initialScrollOffset: 70.0 * currentDateTime.day + 1);
     selectedDay = DateTime(
@@ -229,11 +229,13 @@ class _ReservationPageState extends State<ReservationPage> {
 
   previousMonth() {
     currentDateTime = date_util.DateUtils.previousMonth(currentDateTime);
+    currentMonthList = date_util.DateUtils.daysInMonth(currentDateTime);
     selectedDateTime = currentDateTime;
   }
 
   nextMonth() {
     currentDateTime = date_util.DateUtils.nextMonth(currentDateTime);
+    currentMonthList = date_util.DateUtils.daysInMonth(currentDateTime);
     selectedDateTime = currentDateTime;
   }
 

@@ -1,7 +1,12 @@
+import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:flutterfirebasedeneme/main.dart';
+import 'package:mailer/mailer.dart';
 import 'utils/date_utils.dart' as date_utils;
+import 'package:http/http.dart' as http;
+import 'auth_service.dart';
 
 class AppointmentApproval extends StatefulWidget {
   const AppointmentApproval({Key? key}) : super(key: key);
@@ -11,10 +16,13 @@ class AppointmentApproval extends StatefulWidget {
 
 class _AppointmentApprovalState extends State<AppointmentApproval> {
   FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  AuthService authService = AuthService();
+  late Map<String, dynamic> currentUser;
   double width = 0.0;
   double height = 0.0;
   CollectionReference appointments =
       FirebaseFirestore.instance.collection("appointments");
+  late Stream<QuerySnapshot<Object?>> app;
 
   @override
   Widget build(BuildContext context) {
@@ -30,6 +38,19 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
     );
   }
 
+  @override
+  void initState()  {
+    //currentUser =  authService.getCurrentUser();
+    currentUserMap();
+    app = appointments
+        .where('dateTime', isGreaterThanOrEqualTo: DateTime.now())
+    //.where('status',isEqualTo: 'pending')
+        .orderBy('dateTime', descending: false)
+        .snapshots();
+  }
+
+
+
   buildApprovalInfo(){
     return Container(
       width: width,
@@ -44,6 +65,8 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
       ),
     );
   }
+
+
 
   buildPendingAppointmentsList() {
     return Container(
@@ -100,6 +123,8 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
     );
   }
 
+
+
   slideForApprove(QueryDocumentSnapshot appointment) {
     return ActionPane(
       motion: const ScrollMotion(),
@@ -120,14 +145,24 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
     );
   }
 
-  approveAppointment(QueryDocumentSnapshot appointment) {
-    appointments.doc(appointment.id).update({'status': 'Approved'});
-    displaySnackBar('Appointment Approved');
+  approveAppointment(QueryDocumentSnapshot appointment) async {
+    //appointments.doc(appointment.id).update({'status': 'Approved'});
+    DocumentSnapshot student = await _firestore.collection('users').doc(appointment['studentUID']).get();
+    print(student.get('name'));
+    print(currentUser['name']);
+    await _firestore.collection('users').doc(appointment['studentUID']).get().then((student) {
+          displaySnackBar('Appointment Approved');
+          sendNotification(student.get('fcmToken'),'${currentUser['name']} ${currentUser['surname']}');
+        }
+    );
+  }
 
+  getSelectedUser(String uID) async {
+    DocumentSnapshot documentSnapshot =  await _firestore.collection('users').doc(uID).get();
+    return documentSnapshot.data();
   }
 
   denyAppointment(QueryDocumentSnapshot appointment) async {
-
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -184,9 +219,10 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
             ),
           );
         });
-
-
   }
+
+
+
 
   slideForDeny(QueryDocumentSnapshot appointment) {
     return ActionPane(
@@ -228,5 +264,39 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
+  void sendNotification(String token,String instructorName) async {
+    try {
+      await http.post(
+        Uri.parse('https://fcm.googleapis.com/fcm/send'),
+        headers: <String, String>{
+          'Content-Type': 'application/json',
+          'Authorization':
+          'key=AAAAg6ILid8:APA91bEV1G0iHc580oX91li0Co1qwPiZmOmjCLHMaul4Xa64uPN8IK19XgwLmtruHpk8X8EDGUwSxgnVITWgNwipRBlPuK9JJDJhcUn8YOZoEidHNlhlfhZNLZNqCYZ1QP7d0i2gKSfU'
+        },
+        body: jsonEncode(
+          <String, dynamic>{
+            'notification': <String, dynamic>{
+              'title': 'Appointment Request Accepted',
+              'body': '$instructorName Accepted Your Appointment Request'
+            },
+            'priority': 'high',
+            'data': <String, dynamic>{
+              'click_action': 'FLUTTER_NOTIFICATION_CLICK',
+              'id': '1',
+              'status': 'done'
+            },
+            'to': token,
+          },
+        ),
+      );
+    } catch (e) {
+      displaySnackBar(e.toString());
+    }
+  }
 
+  currentUserMap(){
+    authService.getCurrentUser()!.then((value){
+      currentUser =value as Map<String,dynamic>;
+    });
+  }
 }
