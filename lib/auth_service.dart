@@ -39,6 +39,19 @@ class AuthService {
       return user!.uid;
   }
 
+  getCurrentUserMap()async {
+    final docRef = _firestore.collection("users").doc(_mauth.currentUser!.uid);
+    docRef.get().then(
+          (DocumentSnapshot doc) {
+        final data = doc.data() as Map<String, dynamic>;
+        print(data.containsKey('name'));
+        print(data['name']);
+        return data;
+      },
+      onError: (e) => print("Error getting document: $e"),
+    );
+  }
+
   Future<Map<String, dynamic>?>? getCurrentUser() async  {
     DocumentSnapshot<Map<String, dynamic>> documentSnapshot =  await _firestore.collection('users').doc(_mauth.currentUser?.uid).get();
     return documentSnapshot.data();

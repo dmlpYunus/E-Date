@@ -23,6 +23,8 @@ class _InstPastAppointmentsState extends State<InstPastAppointments> {
     height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
+        backgroundColor: Colors.redAccent,
+
         title: Text('Past Appointments'),
       ),
       body: Stack(
