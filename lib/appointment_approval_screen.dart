@@ -222,8 +222,6 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
   }
 
 
-
-
   slideForDeny(QueryDocumentSnapshot appointment) {
     return ActionPane(
       motion: const ScrollMotion(),

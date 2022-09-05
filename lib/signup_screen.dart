@@ -101,7 +101,7 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
         if (key.currentState!.validate()) {
           key.currentState!.save();
           try {
-            await authService.signUp(emailController.text, passController.text).then((value) =>
+            await authService.signUp(emailController.text, passController.text,nameController.text,surnameController.text).then((value) =>
             {
               value!.reload(),
               //authService.signIn(emailController.text, passController.text)

@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfirebasedeneme/login_screen.dart';
 
@@ -14,15 +15,18 @@ class AuthService {
     return user.user;
   }
 
-  Future<User?> signUp(String email, String pass) async {
+  Future<User?> signUp(String email, String pass,String name, String surname) async {
     var user = await _mauth.createUserWithEmailAndPassword(
         email: email, password: pass);
     await _firestore.collection("users").doc(user.user?.uid).set(
       {
+        'name' : name,
+        'surname' : surname,
         'email': email,
         'password': pass,
         'role': 'student',
-        'studentId': email.split('@')[0]
+        'id': email.split('@')[0].toUpperCase(),
+        'UID' : user.user?.uid
       },
     );
     return user.user;
@@ -83,6 +87,19 @@ class AuthService {
         'id': user.user?.uid.trim(),
         'name': name,
         'surname': surname
+      },
+    );
+
+    await _firestore.collection("users").doc(user.user?.uid).set(
+      {
+        'fcmToken' : await FirebaseMessaging.instance.getToken(),
+        'name' : name,
+        'surname' : surname,
+        'email': email,
+        'password': pass,
+        'role': 'instructor',
+        'Id': email.split('@')[0].toUpperCase(),
+        'UID' : user.user?.uid
       },
     );
     return user.user;

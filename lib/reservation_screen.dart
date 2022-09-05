@@ -85,7 +85,7 @@ class _ReservationPageState extends State<ReservationPage> {
       setState(() {
         email = snapshot.data()!['email'];
         name = snapshot.data()!['name'];
-        id = snapshot.data()!['studentId'];
+        id = snapshot.data()!['Id'];
         surname = snapshot.data()!['surname'];
         role = snapshot.data()!['role'];
       });

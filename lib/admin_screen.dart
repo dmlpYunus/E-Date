@@ -11,15 +11,86 @@ class adminScreen extends StatefulWidget with AccountValidationMixin{
 
 class _adminScreenState extends State<adminScreen> {
   AuthService authService = AuthService();
+  double height =0;
+  double width = 0;
 
   @override
   Widget build(BuildContext context) {
+    height = MediaQuery.of(context).size.height;
+    width = MediaQuery.of(context).size.width;
     return Scaffold(
       body: Container(
-        child:Column(
+        child:Stack(
           children: [
-            buildRegisterInstructorButton(),
-            buildSeeAllAppointmentsButton(),
+            buildAdminTopView(),
+            buildAdmingScreenSplash(),
+            buildAdminScreenBody(),
+          ],
+        ),
+      ),
+    );
+  }
+
+  
+  buildAdmingScreenSplash(){
+    return Container(
+      width: width,
+      height: height*0.4,
+      margin: EdgeInsets.only(top:height*0.1),
+      child: Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Image.asset('images/admin.png',height: 200,width: width*0.5)
+      ],  
+      ),
+    );
+  }
+
+  buildAdminScreenBody(){
+    return Container(
+      width: width,
+      height: height*0.4,
+      margin: EdgeInsets.only(top:height*0.5),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          buildRegisterInstructorButton(),
+          buildSeeAllAppointmentsButton(),
+          buildSeeAllInstructorsButton(),
+          buildSeeAllStudentsButton(),
+        ],
+      ),
+    );
+  }
+
+  buildAdminTopView(){
+    return Container(
+      width: width,
+      height: height * 0.1,
+      child: Padding(
+        padding: const EdgeInsets.all(8.0),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Padding(
+                padding: const EdgeInsets.only(left: 20, right: 20),
+                child: GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                    },
+                    child: const Icon(
+                      Icons.arrow_back_ios_new_rounded,
+                      size: 30,
+                    ))),
+            Padding(
+              padding: EdgeInsets.only(left: width * 0.15),
+              child: const Text('Admin Homepage',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                  )),
+            ),
           ],
         ),
       ),
@@ -28,15 +99,56 @@ class _adminScreenState extends State<adminScreen> {
 
   buildRegisterInstructorButton(){
     return ElevatedButton(onPressed: (){
-      Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorRegister()));
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const InstructorRegister()));
     },
-        child: Text("Register Instructor"));
+        style: ButtonStyle(
+          backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+          shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+          fixedSize: MaterialStateProperty.resolveWith((states) => Size(width*0.55,10)),
+          side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black)),
+        ),
+
+        child: const Text("Register Instructor",style: TextStyle(color: Colors.black),));
   }
 
   buildSeeAllAppointmentsButton(){
     return ElevatedButton(onPressed: (){
 
     },
-        child: Text("All Appointments"));
+        style: ButtonStyle(
+          backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+          shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+          fixedSize: MaterialStateProperty.resolveWith((states) => Size(width*0.55,10)),
+          side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black)),
+        ),
+
+        child: const Text("All Appointments",style: TextStyle(color: Colors.black),));
+  }
+
+  buildSeeAllInstructorsButton() {
+    return ElevatedButton(onPressed: (){
+      
+    },
+        style: ButtonStyle(
+          backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+          shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+          fixedSize: MaterialStateProperty.resolveWith((states) => Size(width*0.55,10)),
+          side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black)),
+        ),
+        child: const Text("All Instructors",style: TextStyle(color: Colors.black),));
+  }
+
+  buildSeeAllStudentsButton() {
+    return ElevatedButton(onPressed: (){
+
+    },
+        style: ButtonStyle(
+      backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+      shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+      fixedSize: MaterialStateProperty.resolveWith((states) => Size(width*0.55,10)),
+      side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black)),
+    ),
+
+        child: const Text("All Students",style: TextStyle(color: Colors.black),));
   }
 }

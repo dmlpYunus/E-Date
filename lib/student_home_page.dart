@@ -24,18 +24,68 @@ class _HomePageState extends State<HomePage>{
   FirebaseFirestore.instance.collection("instructors");
   String selectedInst = "1234";
   Instructor selected = Instructor();
+  double width = 0;
+  double height =0;
   late bool isAdmin;
 
   @override
   void initState() {
 
+  }
 
+  buildSearchBar(){
+   /* showSearch(context: context,
+        delegate: delegate,
+    )*/
+  }
+
+  buildInstructorsList(){
+    return Container(
+      height: height*0.5,
+      margin: EdgeInsets.only(top : height*0.2),
+      child: StreamBuilder(
+          stream: instructorsdb.orderBy("name").snapshots(),
+          builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(
+                child: Text("Loading..."),
+              );
+            }
+            return ListView(
+              children: snapshot.data!.docs.map((instructors) {
+                return Center(
+                  child: ListTile(
+                    onTap: (){
+                      selected = buildInstructor(instructors);
+                      Navigator.push(context, MaterialPageRoute(builder: (context)=> ReservationPage(
+                          title: selectedInst,instructor: selected)));
+                    },
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 15),
+                    trailing: const Icon(Icons.access_alarm_rounded),
+                    leading: const Icon(Icons.insert_invitation_rounded),
+                    subtitle: Text(instructors['email']),
+                    title: Text('${instructors['name']} ${instructors['surname']}'),
+                  ),
+                );
+              }).toList(),
+            );
+          }),
+    );
   }
 
   @override
   Widget build(BuildContext context){
-
+    height  = MediaQuery.of(context).size.height;
+    width  = MediaQuery.of(context).size.width;
     return Scaffold(
+      body:Stack(
+        children: [
+          buildHomepageTopView(),
+          buildInstructorsList(),
+        ],
+      ) ,
+    );
+    /*return Scaffold(
       body:Column(
               children: [
                 Expanded(
@@ -111,20 +161,38 @@ class _HomePageState extends State<HomePage>{
                 ),
               ],
             )
+    );             */
+  }
+
+  buildHomepageTopView(){
+    return Container(
+      width: width,
+      height: height * 0.1,
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+          Text('Homepage',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 22,
+                fontWeight: FontWeight.bold,
+              )),
+        ],
+      ),
     );
   }
 
   Instructor buildInstructor(QueryDocumentSnapshot inst){
-    if(inst['fcmToken'] == null){
+    //if(inst[''] == null){
       return Instructor.withValues(inst['id'], inst['name'], inst['email'], inst['surname'], "Computer");
-    }else{
+    /*}else{
       return Instructor.withFcm(inst['id'],
           inst['name'],
           inst['email'],
-          inst['surname'],"Computer",inst['fcmToken']);
+          inst['surname'],"Computer",inst['fcmToken']);*/
     }
   }
   issAdmin(){
     FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get();
   }
-}
+
