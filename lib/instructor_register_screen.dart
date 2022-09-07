@@ -10,26 +10,75 @@ class InstructorRegister extends StatefulWidget {
   State<InstructorRegister> createState() => _InstructorRegisterState();
 }
 
-class _InstructorRegisterState extends State<InstructorRegister> with AccountValidationMixin {
+class _InstructorRegisterState extends State<InstructorRegister>
+    with AccountValidationMixin {
   AuthService authService = AuthService();
   final emailController = TextEditingController();
   final passController = TextEditingController();
   final nameController = TextEditingController();
   final surnameController = TextEditingController();
-
+  double width = 0;
+  double height = 0;
   var key = GlobalKey<FormState>();
-
   @override
   Widget build(BuildContext context) {
+    height = MediaQuery.of(context).size.height;
+    width = MediaQuery.of(context).size.width;
     return Scaffold(
-      body: Form(
+        body: Stack(
+          children: [buildPageTopView(),buildPageSplash(),buildRegisterForm()],
+    ));
+  }
+
+  buildPageTopView() {
+    return Container(
+      width: width,
+      height: height * 0.2,
+      child: Row(
+        children: [
+          const SizedBox(width: 25),
+          GestureDetector(
+            onTap: () {
+              Navigator.pop(context);
+            },
+              child: const Icon(
+            Icons.arrow_back_ios_new_rounded,
+            size: 30,
+          ))
+        ],
+      ),
+    );
+  }
+
+  buildPageSplash(){
+    return Container(
+      width: width,
+      height: height * 0.15,
+      margin: EdgeInsets.only(top: height*0.15),
+      child: Image.asset('images/register.png',scale: 1),
+    );
+  }
+
+  Widget buildRegisterForm() {
+    return Container(
+      width: width,
+      height: height*0.6,
+      margin: EdgeInsets.only(top: height * 0.35),
+      child: Form(
         key: key,
         child: Padding(
           padding: const EdgeInsets.only(left: 20, right: 20),
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              const Text("Enter Credentials To Register Instructors", textAlign: TextAlign.center,style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.blueGrey),),
+              const Text(
+                "Enter Credentials To Register Instructors",
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blueGrey),
+              ),
               const SizedBox(height: 20),
               buildNameText(),
               const SizedBox(height: 20),
@@ -54,14 +103,13 @@ class _InstructorRegisterState extends State<InstructorRegister> with AccountVal
         if (key.currentState!.validate()) {
           key.currentState!.save();
           try {
-            await authService.RegisterInstructor(emailController.text.trim()
-                ,passController.text.trim()
-                ,nameController.text.trim()
-                ,surnameController.text.trim()
-            ).then((value) =>
-            {
-              displaySnackBar('Instructor Register Successfull')
-            });
+            await authService.RegisterInstructor(
+                    emailController.text.trim(),
+                    passController.text.trim(),
+                    nameController.text.trim(),
+                    surnameController.text.trim())
+                .then((value) =>
+                    {displaySnackBar('Instructor Register Successful')});
           } on FirebaseAuthException catch (error) {
             displaySnackBar(error.message!);
           }
@@ -94,7 +142,8 @@ class _InstructorRegisterState extends State<InstructorRegister> with AccountVal
       controller: passController,
       keyboardType: TextInputType.visiblePassword,
       validator: validatePassword,
-      decoration: const InputDecoration(labelText: ("Password"), hintText: "***"),
+      decoration:
+          const InputDecoration(labelText: ("Password"), hintText: "******"),
       obscureText: true,
     );
   }
@@ -108,6 +157,8 @@ class _InstructorRegisterState extends State<InstructorRegister> with AccountVal
       obscureText: false,
     );
   }
+
+
 
   Widget buildSurnameText() {
     return TextFormField(
@@ -123,7 +174,7 @@ class _InstructorRegisterState extends State<InstructorRegister> with AccountVal
     var snackBar = SnackBar(
       content: Text(
         message,
-        style: const TextStyle(fontSize:14),
+        style: const TextStyle(fontSize: 14),
         textAlign: TextAlign.center,
       ),
       dismissDirection: DismissDirection.down,
@@ -134,6 +185,4 @@ class _InstructorRegisterState extends State<InstructorRegister> with AccountVal
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
-
-
 }

@@ -81,9 +81,9 @@ class _InstructorAccountSettingsState extends State<InstructorAccountSettings> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Image.asset('images/instructor.png',height: height* 0.15,width: width*0.5),
-                    Text('${snapshot.data!.get('name')} ${snapshot.data!.get('surname')}',style: TextStyle(fontSize: 30)),
+                    Text('${snapshot.data!.get('name')} ${snapshot.data!.get('surname')}',style: const TextStyle(fontSize: 30)),
                     const SizedBox(height: 5),
-                    Text('${snapshot.data!.get('role')}'),
+                    Text(capitalizeFirstLetter(snapshot.data!.get('role'))),
                   ],
                 ),
               ),
@@ -137,5 +137,10 @@ class _InstructorAccountSettingsState extends State<InstructorAccountSettings> {
       duration: const Duration(milliseconds: 600),
     );
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  String capitalizeFirstLetter(String s){
+    String capitalizedString = s.characters.first.toUpperCase()+ s.substring(1)  ;
+    return capitalizedString;
   }
 }

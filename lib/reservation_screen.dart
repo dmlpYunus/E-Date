@@ -1,11 +1,8 @@
 import 'dart:convert';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterfirebasedeneme/instructor_homepage.dart';
-import 'package:flutterfirebasedeneme/main.dart';
 import 'Model/instructor.dart';
 import 'utils/colors_util.dart';
 import 'utils/date_utils.dart' as date_util;
@@ -28,9 +25,8 @@ class _ReservationPageState extends State<ReservationPage> {
   _ReservationPageState(this.instName, this.instructor);
   final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
-  late String name, surname, id, email, role;
+  late String name, surname, id, email, role,uID;
   late String token;
-
   double width = 0.0;
   double height = 0.0;
   late ScrollController scrollController;
@@ -86,6 +82,7 @@ class _ReservationPageState extends State<ReservationPage> {
         email = snapshot.data()!['email'];
         name = snapshot.data()!['name'];
         id = snapshot.data()!['id'];
+        uID = snapshot.id;
         surname = snapshot.data()!['surname'];
         role = snapshot.data()!['role'];
       });
@@ -101,15 +98,12 @@ class _ReservationPageState extends State<ReservationPage> {
         .then((snapshot) {
       instructorAppointmentsList.clear();
       if (snapshot.size == 0) {
-        print(selectedDay);
-        print("EMPTY");
         return;
       }
       for (int i = 0; i < snapshot.size; i++) {
         instructorAppointmentsList
             .add(snapshot.docs[i].get('dateTime').toDate());
       }
-      print(instructorAppointmentsList);
     });
   }
 
@@ -125,28 +119,15 @@ class _ReservationPageState extends State<ReservationPage> {
     selectedHourIndex = index;
     selectedDateTime =
         selectedDay.add(Duration(hours: buildHoursList()[index].hour));
-    print("final Date :  $selectedDateTime");
-
-    print("UTC LOCAL");
-    print(selectedDateTime.timeZoneOffset.inHours);
-    print(selectedDateTime.toLocal());
-    print(date_util.DateUtils.fullDayFormat(selectedDateTime).toString());
-
-    print("HOURS VİEW TAP");
-    print(instructorAppointmentsList);
   }
 
   void montViewOnTap(int index) {
-    //currentDateTime = currentMonthList[index];
     currentDateTime = date_util.DateUtils.daysInMonth(currentDateTime)[index];
-
     selectedDay = currentDateTime;
     clearDateTime(selectedDay);
     selectedDateTime = selectedDay;
     getAppointmentTable();
     buildHoursList();
-    print("MONTH VİEW TAP");
-    print(instructorAppointmentsList);
   }
 
   Widget hoursView() {
@@ -300,13 +281,6 @@ class _ReservationPageState extends State<ReservationPage> {
           onTap: () {
             setState(() {
               montViewOnTap(index);
-              /*currentDateTime = currentMonthList[index];
-              selectedDay = currentDateTime;
-              clearDateTime(selectedDay);
-              print(selectedDay);
-              selectedDateTime = selectedDay;
-              buildHoursList();
-              getAppointmentTable();*/
             });
           },
           child: Container(
@@ -567,9 +541,8 @@ class _ReservationPageState extends State<ReservationPage> {
           },
         ),
       );
-      print("DONE!");
     } catch (e) {
-      print(e.toString());
+      displayErrorDialog('Error', e.toString(), context);
     }
   }
 }

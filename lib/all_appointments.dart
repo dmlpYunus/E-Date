@@ -1,12 +1,9 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutterfirebasedeneme/admin_screen.dart';
 import 'package:flutterfirebasedeneme/search_widget.dart';
-import 'Model/instructor.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
-import 'package:flutterfirebasedeneme/reservation_screen.dart';
+import 'utils/date_utils.dart' as date_util;
 
 
 class AllAppointments extends StatefulWidget {
@@ -18,24 +15,73 @@ class AllAppointments extends StatefulWidget {
 
 class _AllAppointmentsState extends State<AllAppointments>{
   final textController = TextEditingController();
-  AuthService _authService = AuthService();
+  final AuthService _authService = AuthService();
   CollectionReference appointmentsdb =
   FirebaseFirestore.instance.collection("appointments");
   late Stream<QuerySnapshot<Object?>> appointmentsStream;
+  String status = 'pending';
   double width = 0;
   double height =0;
   String query = '';
 
   @override
   void initState() {
-    appointmentsStream = appointmentsdb.where('role',isEqualTo: 'student').snapshots();
+    appointmentsStream = appointmentsdb.orderBy('dateTime').snapshots();
+  }
+
+  buildStatusButtons(){
+    return Container(
+      width: width,
+      height: height * 0.1,
+      margin: EdgeInsets.only(top : height * 0.12),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [ElevatedButton(
+            onPressed: (){
+              setState(() {
+                status = 'denied';
+                appointmentsStream = appointmentsdb.where('status',isEqualTo: status).orderBy('dateTime',descending: false).snapshots();
+              });
+            },
+            style: ButtonStyle(side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black,style: BorderStyle.solid)),
+            backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+            shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+            ),
+            child: const Text('Denied',style: TextStyle(color: Colors.black),)),
+          ElevatedButton(
+              onPressed: (){
+                setState(() {
+                  status = 'pending';
+                  appointmentsStream = appointmentsdb.where('status',isEqualTo: status).orderBy('dateTime',descending: false).snapshots();
+                });
+              },
+              style: ButtonStyle(side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black,style: BorderStyle.solid)),
+            backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+            shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+              ),
+              child: const Text('Pending',style: TextStyle(color: Colors.black))),
+          ElevatedButton(
+              onPressed: (){
+                setState(() {
+                  status = 'accepted';
+                  appointmentsStream = appointmentsdb.where('status',isEqualTo: status).orderBy('dateTime',descending: false).snapshots();
+                });
+              },
+              style: ButtonStyle(side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black,style: BorderStyle.solid)),
+                backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+              ),
+              child: const Text('Accepted',style: TextStyle(color: Colors.black)))
+        ],
+      ),
+    );
   }
 
   buildSearchBar(){
     return Container(
         width: width,
         height: height * 0.1,
-        margin: EdgeInsets.only(top : height * 0.12),
+        margin: EdgeInsets.only(top : height * 0.2),
         child: SearchWidget(
           text: query,
           hintText: 'Appointment',
@@ -47,46 +93,118 @@ class _AllAppointmentsState extends State<AllAppointments>{
   void searchAppointment(String query) async{
     setState(()  {
       if(query == ''){
-        appointmentsStream = appointmentsdb.where('role',isEqualTo: 'student').snapshots();
+        if(status !=''){
+          appointmentsStream = appointmentsdb.where('status',isEqualTo: status).orderBy('dateTime',descending: false).snapshots();
+        }else{
+          appointmentsStream = appointmentsdb.orderBy('dateTime',descending: false).snapshots();
+        }
       }else{
-        appointmentsStream = appointmentsdb.where('role',isEqualTo: 'student').orderBy('name').startAt([query]).endAt(['$query\uf8ff']).snapshots();
-        //instructorsStream = instructorsdb.orderBy("search").where('search',isGreaterThanOrEqualTo: query/*\uf8ff'*/).snapshots();
+        if(status !=''){
+          appointmentsStream = appointmentsdb.where('status',isEqualTo: status)
+              .orderBy('dateTime',descending: false).snapshots();
+        }else{
+          appointmentsStream = appointmentsdb.orderBy('dateTime',descending: false).snapshots();
+        }
       }
     });
   }
 
-  buildInstructorsList(){
+  buildInstructorsList() {
     return Container(
       height: height*0.5,
-      margin: EdgeInsets.only(top : height*0.2),
+      margin: EdgeInsets.only(top : height*0.25),
       child: StreamBuilder(
-          stream:appointmentsStream,
+          stream: appointmentsStream,
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
             if(snapshot.connectionState == ConnectionState.waiting) {
-              return const Center(child: CircularProgressIndicator());
+              //return const Center(child: CircularProgressIndicator());
             }
             if (!snapshot.hasData) {
               return const Center(
-                  child: Text('User Not Found')
+                  child: Text('Appointments Not Found')
               );
             }
             return ListView(
-              children: snapshot.data!.docs.map((instructors) {
+              children: snapshot.data!.docs.map((appointments) {
                 return Center(
                   child: ListTile(
                     onTap: (){
+                      appointmentOnTap();
                     },
                     contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-                    trailing: const Text('Student'),
-                    leading: Image.asset('images/instructor.png',color: Colors.black,scale: 13),
-                    subtitle: Text(instructors['email']),
-                    title: Text('${instructors['name']} ${instructors['surname']}',),
+                    leading: Image.asset('images/calendar.png'),
+                    trailing: (appointments['status'] == 'pending') ?
+                    const Icon(Icons.pending_rounded) :
+                    (appointments['status'] == 'denied') ?
+                    const Icon(Icons.cancel_rounded) :
+                    const Icon(Icons.done_outlined),
+                    subtitle: Text(date_util.DateUtils.apiDayFormat(appointments['dateTime'].toDate())),
+                    title: Text('${appointments['studentName']} ${appointments['studentSurname']}',),
                   ),
                 );
               }).toList(),
             );
           }),
     );
+  }
+
+  appointmentOnTap(){
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            child: Container(
+              height: 200,
+              width: 320,
+              padding: const EdgeInsets.all(12),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  const Text(
+                    "Deny Reason",
+                    style: TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(
+                    height: 30,
+                  ),
+                  const TextField(
+                    style: TextStyle(color: Colors.black),
+                    autofocus: true,
+                    decoration: InputDecoration(
+                        hintText: 'Specify the reason for the refusal',
+                        hintStyle: TextStyle(color: Colors.black)),
+                  ),
+                  const SizedBox(
+                    height: 20,
+                  ),
+                  SizedBox(
+                    width: 320,
+                    child: ElevatedButton(
+                      onPressed: () {
+                        /*setState(() {
+                          appointments.doc(appointment.id).update({'status': 'Denied'});
+                          appointments.doc(appointment.id).update({'reason': 'Denied'});
+                          displaySnackBar('Appointment Denied');
+                        });*/
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text("Submit"),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        });
   }
 
 
@@ -98,8 +216,9 @@ class _AllAppointmentsState extends State<AllAppointments>{
       body:Stack(
         children: [
           buildPageTopView(),
-          buildInstructorsList(),
+          buildStatusButtons(),
           buildSearchBar(),
+          buildInstructorsList(),
         ],
       ) ,
     );
@@ -125,7 +244,9 @@ class _AllAppointmentsState extends State<AllAppointments>{
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               )),
-
+          SizedBox(width: width*0.15),
+          IconButton(onPressed: (){
+          }, icon: Icon(Icons.cancel_rounded))
         ],
       ),
     );

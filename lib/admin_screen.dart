@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutterfirebasedeneme/admin_create_appointment.dart';
 import 'package:flutterfirebasedeneme/all_appointments.dart';
 import 'package:flutterfirebasedeneme/all_instructors.dart';
 import 'package:flutterfirebasedeneme/all_students.dart';
@@ -26,7 +27,7 @@ class _adminScreenState extends State<adminScreen> {
         child:Stack(
           children: [
             buildAdminTopView(),
-            buildAdmingScreenSplash(),
+            buildAdminScreenSplash(),
             buildAdminScreenBody(),
           ],
         ),
@@ -35,7 +36,7 @@ class _adminScreenState extends State<adminScreen> {
   }
 
   
-  buildAdmingScreenSplash(){
+  buildAdminScreenSplash(){
     return Container(
       width: width,
       height: height*0.4,
@@ -61,6 +62,8 @@ class _adminScreenState extends State<adminScreen> {
           buildSeeAllAppointmentsButton(),
           buildSeeAllInstructorsButton(),
           buildSeeAllStudentsButton(),
+          buildCreateAppointmentButton(),
+          buildLogOutButton()
         ],
       ),
     );
@@ -69,11 +72,10 @@ class _adminScreenState extends State<adminScreen> {
   buildAdminTopView(){
     return Container(
       width: width,
-      height: height * 0.1,
+      height: height * 0.2,
       child: Padding(
         padding: const EdgeInsets.all(8.0),
         child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
             Padding(
                 padding: const EdgeInsets.only(left: 20, right: 20),
@@ -151,7 +153,33 @@ class _adminScreenState extends State<adminScreen> {
       fixedSize: MaterialStateProperty.resolveWith((states) => Size(width*0.55,10)),
       side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black)),
     ),
-
         child: const Text("All Students",style: TextStyle(color: Colors.black),));
+  }
+
+  buildCreateAppointmentButton(){
+    return ElevatedButton(onPressed: (){
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const AdminCreateAppointment()));
+    },
+        style: ButtonStyle(
+          backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+          shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+          fixedSize: MaterialStateProperty.resolveWith((states) => Size(width*0.55,10)),
+          side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black)),
+        ),
+        child: const Text("Create Appointment",style: TextStyle(color: Colors.black),));
+  }
+
+  buildLogOutButton(){
+    return ElevatedButton(onPressed: (){
+      authService.logOut();
+    },
+        style: ButtonStyle(
+          backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+          shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+          fixedSize: MaterialStateProperty.resolveWith((states) => Size(width*0.55,10)),
+          side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black)),
+        ),
+
+        child: const Text("Log-Out",style: TextStyle(color: Colors.black),));
   }
 }

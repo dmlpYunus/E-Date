@@ -31,6 +31,21 @@ class _AllStudentsState extends State<AllStudents>{
     studentsStream = studentsdb.where('role',isEqualTo: 'student').snapshots();
   }
 
+  @override
+  Widget build(BuildContext context){
+    height  = MediaQuery.of(context).size.height;
+    width  = MediaQuery.of(context).size.width;
+    return Scaffold(
+      body:Stack(
+        children: [
+          buildPageTopView(),
+          buildInstructorsList(),
+          buildSearchBar(),
+        ],
+      ) ,
+    );
+  }
+
   buildSearchBar(){
     return Container(
         width: width,
@@ -49,7 +64,7 @@ class _AllStudentsState extends State<AllStudents>{
       if(query == ''){
         studentsStream = studentsdb.where('role',isEqualTo: 'student').snapshots();
       }else{
-        studentsStream = studentsdb.where('role',isEqualTo: 'student').orderBy('name').startAt([query]).endAt(['$query\uf8ff']).snapshots();
+        studentsStream = studentsdb.where('role',isEqualTo: 'student').orderBy('search').startAt([query]).endAt(['$query\uf8ff']).snapshots();
         //instructorsStream = instructorsdb.orderBy("search").where('search',isGreaterThanOrEqualTo: query/*\uf8ff'*/).snapshots();
       }
     });
@@ -78,7 +93,7 @@ class _AllStudentsState extends State<AllStudents>{
                     },
                     contentPadding: const EdgeInsets.symmetric(horizontal: 15),
                     trailing: const Text('Student'),
-                    leading: Image.asset('images/instructor.png',color: Colors.black,scale: 13),
+                    leading: Image.asset('images/student.png',color: Colors.black,scale: 13),
                     subtitle: Text(students['email']),
                     title: Text('${students['name']} ${students['surname']}',),
                   ),
@@ -90,20 +105,7 @@ class _AllStudentsState extends State<AllStudents>{
   }
 
 
-  @override
-  Widget build(BuildContext context){
-    height  = MediaQuery.of(context).size.height;
-    width  = MediaQuery.of(context).size.width;
-    return Scaffold(
-      body:Stack(
-        children: [
-          buildPageTopView(),
-          buildInstructorsList(),
-          buildSearchBar(),
-        ],
-      ) ,
-    );
-  }
+
 
   buildPageTopView(){
     return Container(
