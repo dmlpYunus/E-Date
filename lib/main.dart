@@ -127,14 +127,22 @@ class _MyAppState extends State<MyApp> {
                 return  FutureBuilder(
                   future: isStudent(),
                   builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
-                    if (snapshot.hasData) {
-                      if (snapshot.data!) {
-                        return  HomePage();
+                    if(snapshot.connectionState == ConnectionState.waiting){
+                      return const Center(child: CircularProgressIndicator());
+                    }else if(snapshot.connectionState == ConnectionState.none){
+                      return const Center(
+                        child: Text('Internet Connection Required'),
+                      );
+                    }else{
+                      if (snapshot.hasData) {
+                        if (snapshot.data!) {
+                          return  HomePage();
+                        } else {
+                          return  InstructorHomepage();
+                        }
                       } else {
-                        return  InstructorHomepage();
+                        return  LoginPage();
                       }
-                    } else {
-                      return  LoginPage();
                     }
                   },
                 );

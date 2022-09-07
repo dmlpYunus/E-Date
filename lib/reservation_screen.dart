@@ -85,7 +85,7 @@ class _ReservationPageState extends State<ReservationPage> {
       setState(() {
         email = snapshot.data()!['email'];
         name = snapshot.data()!['name'];
-        id = snapshot.data()!['Id'];
+        id = snapshot.data()!['id'];
         surname = snapshot.data()!['surname'];
         role = snapshot.data()!['role'];
       });
@@ -484,15 +484,18 @@ class _ReservationPageState extends State<ReservationPage> {
     appointment['studentId'] = studentId.trim();
     appointment['studentName'] = studentName.trim();
     appointment['studentSurname'] = studentSurname.trim();
+    appointment['studentUID'] =  _firebaseAuth.currentUser!.uid.trim();
     appointment['status'] = 'pending';
     await FirebaseFirestore.instance
         .collection('appointments')
         .add(appointment)
-        .whenComplete(() => displaySuccessfullDialog(
+        .then((value)  => displaySuccessfullDialog(
             'Appointment Request Sent To ${instructor.name}',
             '${instructor.name}\n'
-                '${dateTime.toString()}',
-            context));
+                '${dateTime.toString()} \n appointmentId : ${value.id}',
+            context)
+    );
+
     sendNotification(token);
   }
 

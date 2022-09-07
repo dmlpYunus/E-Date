@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutterfirebasedeneme/all_appointments.dart';
+import 'package:flutterfirebasedeneme/all_instructors.dart';
+import 'package:flutterfirebasedeneme/all_students.dart';
 import 'package:flutterfirebasedeneme/instructor_register_screen.dart';
 import 'package:flutterfirebasedeneme/login_validator.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
@@ -113,7 +116,7 @@ class _adminScreenState extends State<adminScreen> {
 
   buildSeeAllAppointmentsButton(){
     return ElevatedButton(onPressed: (){
-
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const AllAppointments()));
     },
         style: ButtonStyle(
           backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
@@ -127,7 +130,7 @@ class _adminScreenState extends State<adminScreen> {
 
   buildSeeAllInstructorsButton() {
     return ElevatedButton(onPressed: (){
-      
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const AllInstructors()));
     },
         style: ButtonStyle(
           backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
@@ -140,7 +143,7 @@ class _adminScreenState extends State<adminScreen> {
 
   buildSeeAllStudentsButton() {
     return ElevatedButton(onPressed: (){
-
+      Navigator.push(context, MaterialPageRoute(builder: (context) => const AllStudents()));
     },
         style: ButtonStyle(
       backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),

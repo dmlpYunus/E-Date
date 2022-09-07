@@ -3,6 +3,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutterfirebasedeneme/admin_screen.dart';
+import 'package:flutterfirebasedeneme/search_widget.dart';
+import 'package:flutterfirebasedeneme/student_account_settings.dart';
 import 'Model/instructor.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/login_screen.dart';
@@ -24,19 +26,39 @@ class _HomePageState extends State<HomePage>{
   FirebaseFirestore.instance.collection("instructors");
   String selectedInst = "1234";
   Instructor selected = Instructor();
+  late Stream<QuerySnapshot<Object?>> instructorsStream;
   double width = 0;
   double height =0;
   late bool isAdmin;
+  String query = '';
 
   @override
   void initState() {
-
+    instructorsStream = instructorsdb.orderBy("name").snapshots();
   }
 
   buildSearchBar(){
-   /* showSearch(context: context,
-        delegate: delegate,
-    )*/
+    return Container(
+      width: width,
+      height: height * 0.1,
+      margin: EdgeInsets.only(top : height * 0.12),
+      child: SearchWidget(
+        text: query,
+        hintText: 'Instructor Name',
+        onChanged: searchInstructor,
+      )
+    );
+  }
+
+  void searchInstructor(String query) async{
+    setState(()  {
+      if(query == ''){
+        instructorsStream = instructorsdb.orderBy("search").snapshots();
+      }else{
+      //instructorsStream = instructorsdb.orderBy("search").where('search',isGreaterThanOrEqualTo: query/*\uf8ff'*/).snapshots();
+      instructorsStream = instructorsdb.orderBy("search").startAt([query]).endAt(['$query\uf8ff']).snapshots();
+      }
+    });
   }
 
   buildInstructorsList(){
@@ -44,11 +66,11 @@ class _HomePageState extends State<HomePage>{
       height: height*0.5,
       margin: EdgeInsets.only(top : height*0.2),
       child: StreamBuilder(
-          stream: instructorsdb.orderBy("name").snapshots(),
+          stream:instructorsStream, //instructorsdb.orderBy("name").snapshots(),
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
             if (!snapshot.hasData) {
               return const Center(
-                child: Text("Loading..."),
+                child: CircularProgressIndicator()
               );
             }
             return ListView(
@@ -61,15 +83,41 @@ class _HomePageState extends State<HomePage>{
                           title: selectedInst,instructor: selected)));
                     },
                     contentPadding: const EdgeInsets.symmetric(horizontal: 15),
-                    trailing: const Icon(Icons.access_alarm_rounded),
-                    leading: const Icon(Icons.insert_invitation_rounded),
+                    trailing: const Text('Instructor'),//const Icon(Icons.access_alarm_rounded),
+                    leading: Image.asset('images/instructor.png',color: Colors.black,scale: 13),
                     subtitle: Text(instructors['email']),
-                    title: Text('${instructors['name']} ${instructors['surname']}'),
+                    title: Text('${instructors['name']} ${instructors['surname']}',),
                   ),
                 );
               }).toList(),
             );
           }),
+    );
+  }
+
+  buildAdminPageButton(){
+    return Container(
+      width: width,
+      height: height*0.15,
+      margin: EdgeInsets.only(top: height * 0.8),
+      child: Column(
+        children: [
+          ElevatedButton(
+            onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const adminScreen(),));
+            },
+            child: const Text('Admin Page'),
+
+          ),
+          ElevatedButton(
+            onPressed: (){
+              Navigator.push(context, MaterialPageRoute(builder: (context) => const StudentAccountSettings(),));
+            },
+            child: const Text('Account Settings'),
+
+          ),
+        ],
+      ),
     );
   }
 
@@ -82,6 +130,8 @@ class _HomePageState extends State<HomePage>{
         children: [
           buildHomepageTopView(),
           buildInstructorsList(),
+          buildSearchBar(),
+          buildAdminPageButton(),
         ],
       ) ,
     );
@@ -167,16 +217,16 @@ class _HomePageState extends State<HomePage>{
   buildHomepageTopView(){
     return Container(
       width: width,
-      height: height * 0.1,
+      height: height * 0.2,
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [
-          Text('Homepage',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              )),
+             Text('Homepage',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                )),
         ],
       ),
     );
@@ -192,7 +242,41 @@ class _HomePageState extends State<HomePage>{
           inst['surname'],"Computer",inst['fcmToken']);*/
     }
   }
-  issAdmin(){
-    FirebaseFirestore.instance.collection('users').doc(FirebaseAuth.instance.currentUser!.uid).get();
+
+  /*class MySearchDelegate extends SearchDelegate{
+    @override
+  List<Widget> buildActions(BuildContext context) {
+    return [
+    IconButton(
+      icon: Icon(Icons.arrow_back_ios_new_outlined),
+      onPressed: (){
+        close(context, null);
+      },
+    )
+    ];
   }
+  @override
+  Widget buildLeading(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.arrow_back_ios_new_outlined),
+      onPressed: (){
+        if(query.isEmpty){
+          close(context, null);
+        }
+        else{
+          query = '';
+        }
+      },
+    );
+  }
+  @override
+  Widget buildResults(BuildContext context) {
+
+  }
+
+    @override
+  Widget buildSuggestions(BuildContext context) {
+
+  }
+}*/
 
