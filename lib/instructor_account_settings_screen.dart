@@ -66,7 +66,7 @@ class _InstructorAccountSettingsState extends State<InstructorAccountSettings> {
     return Container(
       width: width,
       height: height * 0.9,
-      margin: EdgeInsets.only(top: height * 0.1),
+      margin: EdgeInsets.only(top: height * 0.15),
       child: FutureBuilder(
         future: _firestore
             .collection('users')

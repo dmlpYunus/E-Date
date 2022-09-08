@@ -6,7 +6,8 @@ import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/instructor_account_settings_screen.dart';
 import 'package:flutterfirebasedeneme/instructor_past_appointments_screen.dart';
 import 'package:flutterfirebasedeneme/instructor_upcoming_appointments_screen.dart';
-import 'utils/date_utils.dart' as date_utils;
+import 'package:flutterfirebasedeneme/utils/colors_util.dart';
+import 'utils/date_utils.dart' as date_util;
 
 class InstructorHomepage extends StatefulWidget {
   const InstructorHomepage({Key? key}) : super(key: key);
@@ -34,13 +35,16 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     height = MediaQuery.of(context).size.height;
     return Scaffold(
         appBar: AppBar(
-          title: const Text('E-Date'),
+          backgroundColor: Colors.transparent,
+          shadowColor: Colors.transparent,
+          foregroundColor: Colors.black,
+          title: const Text('E-Date',style: TextStyle(color: Colors.black)),
           centerTitle: true,
           actions: [
             InkWell(
               child: Container(
                   padding: const EdgeInsets.all(5),
-                  child: const Icon(Icons.notifications)),
+                  child: const Icon(Icons.notifications,color: Colors.black,)),
               onTap: () {
                 Navigator.push(
                     context,
@@ -66,7 +70,8 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
       width: width,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [Text('Welcome'), Text('Today\'s appointments')],
+        children: const [Text('Welcome',style: TextStyle(fontSize: 24,color: Colors.black,fontWeight: FontWeight.bold)),
+          Text('Today\'s appointments',style: TextStyle(fontSize: 18,color: Colors.black,fontWeight: FontWeight.normal))],
       ),
     );
   }
@@ -74,7 +79,7 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
 
 
   timeStampToDateTime(Timestamp timeStamp) {
-    return '${date_utils.DateUtils.fullDayFormat(timeStamp.toDate())} ${timeStamp.toDate().hour.toString()}.00';
+    return '${date_util.DateUtils.fullDayFormat(timeStamp.toDate())} ${timeStamp.toDate().hour.toString()}.00';
   }
 
   buildInstructorNotifications() {
@@ -153,12 +158,12 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
             }else if(snapshot.hasError){
               return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children:  [Text('${snapshot.error.toString()}'),
+                  children:  [Text(snapshot.error.toString()),
             Text('${snapshot.data!.get('email')}')]);
             } else{
               return Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children:  [Text('EMPTY')]);
+                  children:  const [Text('EMPTY')]);
             }
           },
         )
@@ -179,15 +184,13 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     return hours;
   }
 
-  getAppointmentTable() async {
-    print(_firebaseAuth.currentUser!.uid);
+  /*getAppointmentTable() async {
     await _firestore
         .collection('appointments')
         .where('dateTimeDay', isEqualTo: today)
         //.where('instructorId', isEqualTo:_firebaseAuth.currentUser!.uid)
         .get()
         .then((snapshot) {
-      print(snapshot.size);
       instructorAppointmentsList.clear();
       if (snapshot.size == 0) {
         return;
@@ -198,14 +201,13 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
         todaysAppointmentHours.add(snapshot.docs[i].get('dateTime').toDate());
       }
     });
-  }
+  }*/
 
   @override
   void initState() {
     super.initState();
     today =
         DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    getAppointmentTable();
     currentUser =  authService.getCurrentUser();
   }
 
@@ -230,27 +232,38 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
               AsyncSnapshot<QuerySnapshot> snapshot,
             ) {
               return ListTile(
+                onTap: (){
+                  QueryDocumentSnapshot tile =snapshot.data!.docs
+                      .where((element) =>
+                  buildHoursList()[index] ==
+                      (element.get('dateTime').toDate())).first;
+                 if(tile.get('dateTime').toDate() == buildHoursList()[index]){
+                   setState(() {
+                     appointmentOnTap(tile);
+                   });
+                 }
+                },
                   leading: (buildHoursList()[index].hour == 8)
                       ? Text(
                           '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00      ',
                           style: const TextStyle(
-                            color: Colors.blueGrey,
-                            fontSize: 14,
+                            color: Colors.black,
+                            fontSize: 16,
                             fontWeight: FontWeight.bold,
                           ))
                       : (buildHoursList()[index].hour == 9)
                           ? Text(
                               '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00    ',
                               style: const TextStyle(
-                                color: Colors.blueGrey,
-                                fontSize: 14,
+                                color: Colors.black,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               ))
                           : Text(
                               '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00 ',
-                              style: TextStyle(
-                                color: Colors.black.withOpacity(0.68),
-                                fontSize: 14,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontSize: 16,
                                 fontWeight: FontWeight.bold,
                               )),
                   title: (snapshot.hasData &&
@@ -267,8 +280,8 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
                               .first
                               .get('studentName'),
                           textAlign: TextAlign.justify,
-                          style: const TextStyle(
-                            color: Colors.lightBlue,
+                          style:  TextStyle(
+                            color: HexColor('0416B5'),
                             fontSize: 26,
                             fontWeight: FontWeight.bold,
                           ))
@@ -305,6 +318,91 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     );
   }
 
+  appointmentOnTap(QueryDocumentSnapshot appointment){
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            child: Container(
+              height: height*0.35,
+              width: 450,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const SizedBox(height: 20),
+                  const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    "Appointment ID : ${appointment.id}",
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}   Hour : ${appointment['dateTime'].toDate().hour}:00',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Instructor ID : ${appointment['instructorId']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Student ID : ${appointment['studentId']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  SizedBox(
+                    width: 320,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                        children : [
+                          OutlinedButton(
+                            onPressed: (){
+                              Navigator.pop(context);
+                            },
+                            style: OutlinedButton.styleFrom(
+                                side: const BorderSide(width: 3,color: Colors.transparent),
+                                shadowColor: Colors.transparent,
+                                backgroundColor: Colors.transparent
+                            ),
+                            child: Text('Ok',style: TextStyle(color: HexColor('0416B5'))),
+
+                          ),]
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
   buildDrawerButtons() {
     return Container(
       width: width * 0.75,
@@ -312,15 +410,27 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          ElevatedButton(
+          OutlinedButton(
+            style: OutlinedButton.styleFrom(
+                primary: Colors.black,
+                shadowColor: Colors.transparent,
+                fixedSize: Size.fromWidth(width * 0.5),
+                side: const BorderSide(color: Colors.black,width: 1.2),
+            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10)))),
               onPressed: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
                         builder: (context) => const InstPastAppointments()));
               },
-              child: const Text('Past Appointments')),
-          ElevatedButton(
+              child: const Text('Past Appointments',style: TextStyle(fontSize: 15.5))),
+          OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                  primary: Colors.black,
+                  shadowColor: Colors.transparent,
+                  fixedSize: Size.fromWidth(width * 0.5),
+                  side: const BorderSide(color: Colors.black,width: 1),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10)))),
               onPressed: () {
                 Navigator.push(
                     context,
@@ -328,8 +438,14 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
                         builder: (context) =>
                             const InstUpcomingAppointments()));
               },
-              child: const Text('Upcoming Appointments')),
-          ElevatedButton(
+              child: const Text('Upcoming Appointments',style: TextStyle(fontSize: 15.5))),
+          OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                  primary: Colors.black,
+                  shadowColor: Colors.transparent,
+                  fixedSize: Size.fromWidth(width * 0.5),
+                  side: const BorderSide(color: Colors.black,width: 1.5),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10)))),
               onPressed: () {
                 Navigator.push(
                     context,
@@ -337,7 +453,7 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
                         builder: (context) =>
                             const InstructorAccountSettings()));
               },
-              child: const Text('Account Settings'))
+              child: const Text('Account Settings',style: TextStyle(fontSize: 15.5)))
         ],
       ),
     );

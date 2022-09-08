@@ -36,7 +36,20 @@ class _AllAppointmentsState extends State<AllAppointments>{
       margin: EdgeInsets.only(top : height * 0.12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: [ElevatedButton(
+        children: [
+          ElevatedButton(
+            onPressed: (){
+              setState(() {
+                status = 'cancelled';
+                appointmentsStream = appointmentsdb.where('status',isEqualTo: status).orderBy('dateTime',descending: false).snapshots();
+              });
+            },
+            style: ButtonStyle(side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black,style: BorderStyle.solid)),
+              backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+              shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+            ),
+            child: const Text('Cancelled',style: TextStyle(color: Colors.black),)),
+          ElevatedButton(
             onPressed: (){
               setState(() {
                 status = 'denied';
@@ -47,7 +60,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
             backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
             shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
             ),
-            child: const Text('Denied',style: TextStyle(color: Colors.black),)),
+            child: const Text('Denied',style: TextStyle(color: Colors.black))),
           ElevatedButton(
               onPressed: (){
                 setState(() {
@@ -96,7 +109,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
         if(status !=''){
           appointmentsStream = appointmentsdb.where('status',isEqualTo: status).orderBy('dateTime',descending: false).snapshots();
         }else{
-          appointmentsStream = appointmentsdb.orderBy('dateTime',descending: false).snapshots();
+          appointmentsStream = appointmentsdb.orderBy('dateTime',descending: false).orderBy('name').startAt([query]).endAt(['$query\uf8ff']).snapshots();
         }
       }else{
         if(status !=''){
@@ -134,10 +147,12 @@ class _AllAppointmentsState extends State<AllAppointments>{
                     contentPadding: const EdgeInsets.symmetric(horizontal: 15),
                     leading: Image.asset('images/calendar.png'),
                     trailing: (appointments['status'] == 'pending') ?
-                    const Icon(Icons.pending_rounded) :
+                    const Icon(Icons.access_time,color: Colors.orangeAccent) :
                     (appointments['status'] == 'denied') ?
-                    const Icon(Icons.cancel_rounded) :
-                    const Icon(Icons.done_outlined),
+                    const Icon(Icons.cancel_rounded,color: Colors.red,) :
+                    (appointments['status'] == 'accepted') ?
+                    const Icon(Icons.done_outlined,color: Colors.green) :
+                    const Icon(Icons.delete,color: Colors.deepPurple,),
                     subtitle: Text(date_util.DateUtils.apiDayFormat(appointments['dateTime'].toDate())),
                     title: Text('${appointments['studentName']} ${appointments['studentSurname']}',),
                   ),
@@ -149,6 +164,112 @@ class _AllAppointmentsState extends State<AllAppointments>{
   }
 
   appointmentOnTap(QueryDocumentSnapshot appointment){
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            child: Container(
+              height: height*0.42,
+              width: 450,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  const SizedBox(height: 20),
+                  const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text(
+                    "Appointment ID : ${appointment.id}",
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,fontWeight: FontWeight.bold),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}   Hour : ${appointment['dateTime'].toDate().hour}:00',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Instructor ID : ${appointment['instructorId']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Student ID : ${appointment['studentId']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Student UID : ${appointment['studentUID']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: 320,
+                    child: Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children : [
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+                                appointmentsdb.doc(appointment.id).update({'status' : 'cancelled'});
+                                Navigator.pop(context);
+                              });
+                            },
+                            style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                                shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent)),
+                            child: const Text("Delete",style: TextStyle(color: Colors.red)),
+                          ),
+                          ElevatedButton(
+                            onPressed: () {
+                              setState(() {
+
+                              });
+                            },
+                            style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                                shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                            child: const Text("Edit",style: TextStyle(color: Colors.green)),
+                          ),
+                          ElevatedButton(
+                            onPressed: () => Navigator.pop(context),
+                            style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                                shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                            child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                          )]
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        });
+  }
+
+
+
+  /*appointmentOnTap(QueryDocumentSnapshot appointment){
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -230,7 +351,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
             ),
           );
         });
-  }
+  }*/
 
 
   @override

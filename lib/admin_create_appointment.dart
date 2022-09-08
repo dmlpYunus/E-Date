@@ -101,15 +101,88 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
           buildInstructorsList(),
           buildSearchBar(),
         ] : [
-          topView(),
+          /*topView(),
+          hoursView()*/
+          titleView(),
+          horizontalCapsuleListView(),
           hoursView()
         ],
       ) ,
-      floatingActionButton: floatingActionBtn(),
+      floatingActionButton: (instructorSelected) ? floatingActionBtn() :null,
     );
   }
 
   Widget hoursView() {
+    return Container(
+      margin: EdgeInsets.fromLTRB(10, height * 0.28, 15, 15),
+      width: width,
+      height: height * 0.8,
+      child: ListView.builder(
+        itemCount: buildHoursList().length - 1,
+        itemBuilder: (context, index) {
+          return StreamBuilder(
+            stream:  _firestore
+                .collection('appointments')
+                .where('instructorId',
+                isEqualTo: selectedInstructor['id'])
+                .where('dateTimeDay', isEqualTo: selectedDay)
+                .where('status',whereNotIn: ['denied','cancelled'])
+                .snapshots(),
+            builder: (
+                context,
+                AsyncSnapshot<QuerySnapshot> snapshot,
+                ) {
+              return ListTile(
+                tileColor: (selectedDateTime == buildHoursList()[index]) ? Colors.blueGrey.withOpacity(0.2) : Colors.transparent,
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                leading: const Icon(
+                  Icons.access_time,
+                  color: Colors.black,
+                  size: 28,
+                ),
+                title: Text(
+                    '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00',
+                    style:  TextStyle(
+                      color: (selectedDateTime == buildHoursList()[index]) ? Colors.white : Colors.black,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),textAlign: TextAlign.justify),
+                trailing: (snapshot.hasData &&
+                    snapshot.data!.docs
+                        .where((element) =>
+                    buildHoursList()[index] ==
+                        (element.get('dateTime').toDate()))
+                        .isNotEmpty)
+                    ? const Text(
+                    'Busy',
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(
+                      color: Colors.red,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    ))
+                    : const Text(
+                    'Free',
+                    textAlign: TextAlign.justify,
+                    style: TextStyle(
+                      color: Colors.green,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                    )),
+                onTap: (){
+                  setState(() {
+                    hoursViewOnTap(index);
+                  });
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  /*Widget hoursView() {
     return Container(
       margin: EdgeInsets.fromLTRB(10, height * 0.38, 15, 15),
       width: width,
@@ -148,7 +221,7 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
         },
       ),
     );
-  }
+  }*/
   void hoursViewOnTap(int index) {
     selectedHourIndex = index;
     selectedDateTime =
@@ -156,7 +229,7 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
   }
 
 
-  Widget topView() {
+  /*Widget topView() {
     return Container(
       height: height * 0.35,
       width: width,
@@ -190,8 +263,27 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
             hrizontalCapsuleListView(),
           ]),
     );
+  }*/
+
+  Widget horizontalCapsuleListView() {
+    return Container(
+      width: width,
+      height: 120,
+      margin: const EdgeInsets.only(top: 100),
+      child: ListView.builder(
+        controller: scrollController,
+        scrollDirection: Axis.horizontal,
+        physics: const ClampingScrollPhysics(),
+        shrinkWrap: true,
+        itemCount: date_util.DateUtils.daysInMonth(currentDateTime).length,
+        itemBuilder: (BuildContext context, int index) {
+          return capsuleView(index);
+        },
+      ),
+    );
   }
-  Widget hrizontalCapsuleListView() {
+
+  /*Widget hrizontalCapsuleListView() {
     return Container(
       width: width,
       height: 150,
@@ -206,7 +298,7 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
         },
       ),
     );
-  }
+  }*/
 
   void montViewOnTap(int index) {
     currentDateTime = date_util.DateUtils.daysInMonth(currentDateTime)[index];
@@ -235,6 +327,80 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
   }
 
   Widget capsuleView(int index) {
+    return Padding(
+        padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
+        child: GestureDetector(
+          onTap: () {
+            setState(() {
+              montViewOnTap(index);
+            });
+          },
+          child: Container(
+            width: 80,
+            height: 40,
+            decoration: BoxDecoration(
+                gradient: LinearGradient(
+                    colors: (currentMonthList[index].day != currentDateTime.day)
+                        ? [
+                      Colors.transparent,
+                      Colors.transparent,
+                      Colors.transparent,
+                    ]
+                        : [
+                      /*Colors.blueGrey,
+                            Colors.blueAccent,*/
+                      HexColor('0416B5'),
+                      HexColor('0416B5'),
+                      HexColor('0416B5'),
+                      //Colors.blue,
+                      //Colors.blue,
+                    ],
+                    begin: const FractionalOffset(0.0, 0.0),
+                    end: const FractionalOffset(0.0, 1.0),
+                    stops: const [0.0, 0.5, 1.0],
+                    tileMode: TileMode.clamp),
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: const [
+                  BoxShadow(
+                    offset: Offset(2, 2),
+                    blurRadius: 2,
+                    spreadRadius: 1,
+                    color: Colors.transparent,
+                  )
+                ]),
+            child: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: <Widget>[
+                  Text(
+                    currentMonthList[index].day.toString(),
+                    style: TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color:
+                        (currentMonthList[index].day != currentDateTime.day)
+                            ? Colors.black
+                            : Colors.white),
+                  ),
+                  Text(
+                    date_util.DateUtils
+                        .weekdays[currentMonthList[index].weekday - 1],
+                    style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                        color:
+                        (currentMonthList[index].day != currentDateTime.day)
+                            ? Colors.blueGrey
+                            : Colors.white),
+                  )
+                ],
+              ),
+            ),
+          ),
+        ));
+  }
+
+  /*Widget capsuleView(int index) {
     return Padding(
         padding: const EdgeInsets.fromLTRB(8, 0, 0, 0),
         child: GestureDetector(
@@ -302,9 +468,9 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
             ),
           ),
         ));
-  }
+  }*/
 
-  Widget titleView() {
+  /*Widget titleView() {
     return Padding(
       padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
       child: Row(
@@ -331,6 +497,43 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
           GestureDetector(
               child: const Icon(Icons.arrow_forward_ios,
                   size: 30, color: Colors.deepOrangeAccent),
+              onTap: () {
+                setState(() {
+                  nextMonth();
+                });
+              }),
+        ],
+      ),
+    );
+  }*/
+
+  Widget titleView() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 60, 0, 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          GestureDetector(
+            child: const Icon(Icons.arrow_back_ios_new_rounded,
+                size: 30, color: Colors.black),
+            onTap: () {
+              setState(() {
+                previousMonth();
+              });
+            },
+          ),
+          const SizedBox(width: 20),
+          Text(
+            date_util.DateUtils.months[currentDateTime.month - 1] +
+                ' ' +
+                currentDateTime.year.toString(),
+            style: const TextStyle(
+                color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
+          ),
+          const SizedBox(width: 20),
+          GestureDetector(
+              child: const Icon(Icons.arrow_forward_ios,
+                  size: 30, color: Colors.black),
               onTap: () {
                 setState(() {
                   nextMonth();

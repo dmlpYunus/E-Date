@@ -47,8 +47,8 @@ class _ReservationPageState extends State<ReservationPage> {
     return Scaffold(
         body: Stack(
           children: <Widget>[
-            //backgroundView(),
-            topView(),
+            titleView(),
+            horizontalCapsuleListView(),
             hoursView()
           ],
         ),
@@ -60,7 +60,6 @@ class _ReservationPageState extends State<ReservationPage> {
     super.initState();
     currentMonthList = date_util.DateUtils.daysInMonth(currentDateTime);
     currentMonthList.sort((a, b) => a.day.compareTo(b.day));
-    //currentMonthList = currentMonthList.toSet().toList();
     scrollController =
         ScrollController(initialScrollOffset: 70.0 * currentDateTime.day + 1);
     selectedDay = DateTime(
@@ -94,6 +93,7 @@ class _ReservationPageState extends State<ReservationPage> {
         .collection('appointments')
         .where('dateTimeDay', isEqualTo: selectedDay)
         .where('instructorId', isEqualTo: instructor.id)
+        .where('status',isNotEqualTo: ['pending','cancelled'])
         .get()
         .then((snapshot) {
       instructorAppointmentsList.clear();
@@ -132,9 +132,79 @@ class _ReservationPageState extends State<ReservationPage> {
 
   Widget hoursView() {
     return Container(
-      margin: EdgeInsets.fromLTRB(10, height * 0.38, 15, 15),
+      margin: EdgeInsets.fromLTRB(10, height * 0.28, 15, 15),
       width: width,
-      height: height * 0.60,
+      height: height * 0.8,
+      child: ListView.builder(
+        itemCount: buildHoursList().length - 1,
+        itemBuilder: (context, index) {
+          return StreamBuilder(
+            stream:  _firestore
+                .collection('appointments')
+                .where('instructorId',
+                isEqualTo: instructor.id)
+                .where('dateTimeDay', isEqualTo: selectedDay)
+                .where('status',whereNotIn: ['denied','cancelled'])
+                .snapshots(),
+            builder: (
+                context,
+                AsyncSnapshot<QuerySnapshot> snapshot,
+                ) {
+              return ListTile(
+                tileColor: (selectedDateTime == buildHoursList()[index]) ? Colors.blueGrey.withOpacity(0.2) : Colors.transparent,
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                  leading: const Icon(
+                    Icons.access_time,
+                    color: Colors.black,
+                    size: 28,
+                  ),
+                  title: Text(
+                      '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00',
+                      style:  TextStyle(
+                        color: (selectedDateTime == buildHoursList()[index]) ? Colors.white : Colors.black,
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),textAlign: TextAlign.justify),
+                  trailing: (snapshot.hasData &&
+                      snapshot.data!.docs
+                          .where((element) =>
+                      buildHoursList()[index] ==
+                          (element.get('dateTime').toDate()))
+                          .isNotEmpty)
+                      ? const Text(
+                      'Busy',
+                      textAlign: TextAlign.justify,
+                      style: TextStyle(
+                        color: Colors.red,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ))
+                      : const Text(
+                      'Free',
+              textAlign: TextAlign.justify,
+              style: TextStyle(
+              color: Colors.green,
+              fontSize: 15,
+              fontWeight: FontWeight.bold,
+              )),
+                onTap: (){
+                  setState(() {
+                    hoursViewOnTap(index);
+                  });
+                },
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
+  /*Widget hoursView() {
+    return Container(
+      margin: EdgeInsets.fromLTRB(10, height * 0.3, 15, 15),
+      width: width,
+      height: height * 0.70,
       child: ListView.builder(
         itemCount: buildHoursList().length - 1,
         itemBuilder: (context, index) {
@@ -147,7 +217,7 @@ class _ReservationPageState extends State<ReservationPage> {
                   fontWeight: FontWeight.bold,
                 )),
             autofocus: true,
-            contentPadding: EdgeInsets.only(right: 15, left: 15),
+            contentPadding: const EdgeInsets.only(right: 15, left: 15),
             leading: const Icon(
               Icons.access_time,
               color: Colors.grey,
@@ -169,7 +239,7 @@ class _ReservationPageState extends State<ReservationPage> {
         },
       ),
     );
-  }
+  }*/
 
   Widget todoList() {
     return Container(
@@ -222,13 +292,13 @@ class _ReservationPageState extends State<ReservationPage> {
 
   Widget titleView() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+      padding: const EdgeInsets.fromLTRB(0, 60, 0, 20),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           GestureDetector(
             child: const Icon(Icons.arrow_back_ios_new_rounded,
-                size: 30, color: Colors.deepOrangeAccent),
+                size: 30, color: Colors.black),
             onTap: () {
               setState(() {
                 previousMonth();
@@ -241,12 +311,12 @@ class _ReservationPageState extends State<ReservationPage> {
                 ' ' +
                 currentDateTime.year.toString(),
             style: const TextStyle(
-                color: Colors.white, fontWeight: FontWeight.bold, fontSize: 20),
+                color: Colors.black, fontWeight: FontWeight.bold, fontSize: 20),
           ),
           const SizedBox(width: 20),
           GestureDetector(
               child: const Icon(Icons.arrow_forward_ios,
-                  size: 30, color: Colors.deepOrangeAccent),
+                  size: 30, color: Colors.black),
               onTap: () {
                 setState(() {
                   nextMonth();
@@ -257,10 +327,11 @@ class _ReservationPageState extends State<ReservationPage> {
     );
   }
 
-  Widget hrizontalCapsuleListView() {
+  Widget horizontalCapsuleListView() {
     return Container(
       width: width,
-      height: 150,
+      height: 120,
+      margin: const EdgeInsets.only(top: 100),
       child: ListView.builder(
         controller: scrollController,
         scrollDirection: Axis.horizontal,
@@ -285,31 +356,35 @@ class _ReservationPageState extends State<ReservationPage> {
           },
           child: Container(
             width: 80,
-            height: 140,
+            height: 40,
             decoration: BoxDecoration(
                 gradient: LinearGradient(
                     colors: (currentMonthList[index].day != currentDateTime.day)
                         ? [
-                            Colors.white.withOpacity(0.8),
-                            Colors.white.withOpacity(0.7),
-                            Colors.white.withOpacity(0.6)
+                            Colors.transparent,
+                            Colors.transparent,
+                            Colors.transparent,
                           ]
                         : [
-                            Colors.orange,
-                            Colors.deepOrange,
-                            Colors.red,
+                            /*Colors.blueGrey,
+                            Colors.blueAccent,*/
+                            HexColor('0416B5'),
+                            HexColor('0416B5'),
+                            HexColor('0416B5'),
+                            //Colors.blue,
+                            //Colors.blue,
                           ],
                     begin: const FractionalOffset(0.0, 0.0),
                     end: const FractionalOffset(0.0, 1.0),
                     stops: const [0.0, 0.5, 1.0],
                     tileMode: TileMode.clamp),
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(25),
                 boxShadow: const [
                   BoxShadow(
                     offset: Offset(2, 2),
                     blurRadius: 2,
                     spreadRadius: 1,
-                    color: Colors.black12,
+                    color: Colors.transparent,
                   )
                 ]),
             child: Center(
@@ -323,7 +398,7 @@ class _ReservationPageState extends State<ReservationPage> {
                         fontWeight: FontWeight.bold,
                         color:
                             (currentMonthList[index].day != currentDateTime.day)
-                                ? Colors.blueGrey
+                                ? Colors.black
                                 : Colors.white),
                   ),
                   Text(
@@ -348,21 +423,23 @@ class _ReservationPageState extends State<ReservationPage> {
     return Container(
       height: height * 0.35,
       width: width,
-      decoration: BoxDecoration(
+      decoration:  BoxDecoration(
         gradient: LinearGradient(
             colors: [
+              //Colors.blueGrey,
               HexColor("488BC8").withOpacity(0.7),
               HexColor("488BC8").withOpacity(0.5),
               HexColor("488BC8").withOpacity(0.3)
             ],
             begin: const FractionalOffset(0.0, 0.0),
             end: const FractionalOffset(0.0, 1.0),
-            stops: const [0.0, 0.5, 1.0],
+            stops: [0.0, 0.5, 1.0],
             tileMode: TileMode.clamp),
         boxShadow: const [
           BoxShadow(
               blurRadius: 4,
-              color: Colors.black12,
+              //color: Colors.black12,
+              color : Colors.transparent,
               offset: Offset(4, 4),
               spreadRadius: 2)
         ],
@@ -375,7 +452,7 @@ class _ReservationPageState extends State<ReservationPage> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             titleView(),
-            hrizontalCapsuleListView(),
+            horizontalCapsuleListView(),
           ]),
     );
   }
@@ -454,6 +531,7 @@ class _ReservationPageState extends State<ReservationPage> {
     appointment['appointmentRegisterTime'] = DateTime.now();
     appointment['dateTimeDay'] = selectedDay;
     appointment['instructorName'] = instructor.name.trim();
+    appointment['instructorSurname'] = instructor.name.trim();
     appointment['instructorId'] = instructor.id.trim();
     appointment['studentId'] = studentId.trim();
     appointment['studentName'] = studentName.trim();
@@ -463,14 +541,11 @@ class _ReservationPageState extends State<ReservationPage> {
     await FirebaseFirestore.instance
         .collection('appointments')
         .add(appointment)
-        .then((value)  => displaySuccessfullDialog(
-            'Appointment Request Sent To ${instructor.name}',
-            '${instructor.name}\n'
-                '${dateTime.toString()} \n appointmentId : ${value.id}',
-            context)
-    );
-
-    sendNotification(token);
+        .then((value) {
+      displaySuccessfullDialog(
+          'Appointment Request Successful', value.id, context);
+      sendNotification(token);
+    });
   }
 
   DateTime clearDateTime(DateTime dateTime) {
@@ -484,15 +559,31 @@ class _ReservationPageState extends State<ReservationPage> {
   void displaySuccessfullDialog(
       String title, String message, BuildContext context) {
     var alert = AlertDialog(
-      title: Text(title),
-      content: Text(message),
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20)),
+      title: const Text('Appointment Request Successful'),
+      content: Container(
+        height: height*0.115,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text('Appointment ID : $message'),
+            const SizedBox(height: 10),
+            Text('Date : ${date_util.DateUtils.fullDayFormat(selectedDateTime)} Hour : ${selectedDateTime.hour}:00'),
+            const SizedBox(height: 5),
+            Text('Instructor : ${instructor.name} ${instructor.surname}'),
+          ],
+        ),
+      ),
       actions: [
         ElevatedButton(
+            style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
             onPressed: () {
               Navigator.pop(context);
               Navigator.pop(context);
             },
-            child: const Text('OKAY'))
+            child: Text('Return',style: TextStyle(color: HexColor('0416B5'))))
       ],
     );
     showDialog(context: context, builder: (BuildContext context) => alert);

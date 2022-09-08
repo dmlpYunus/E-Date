@@ -30,6 +30,10 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
     height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
+        shadowColor: Colors.transparent,
+        foregroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded),onPressed: () =>Navigator.pop(context)),
         title: const Text('Pending Appointment Requests'),
       ),
       body: Stack(

@@ -23,9 +23,12 @@ class _InstPastAppointmentsState extends State<InstPastAppointments> {
     height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Colors.redAccent,
-
-        title: Text('Past Appointments'),
+        shadowColor: Colors.transparent,
+        foregroundColor: Colors.black,
+        backgroundColor: Colors.transparent,
+        leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded),onPressed: () =>Navigator.pop(context)),
+        title: const Text('Past Appointments'),
+        centerTitle: true,
       ),
       body: Stack(
         children: [
