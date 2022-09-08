@@ -129,7 +129,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> with AccountVal
                       }
                     }
                   },
-                  child: Text("Sign-In"),
+                  child: const Text("Submit"),
                 ),
               ),
             ],

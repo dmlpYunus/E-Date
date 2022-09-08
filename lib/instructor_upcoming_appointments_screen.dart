@@ -23,7 +23,17 @@ class _InstUpcomingAppointmentState extends State<InstUpcomingAppointments> {
     height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Upcoming Appointments'),
+        backgroundColor: Colors.transparent,
+        shadowColor: Colors.transparent,
+        foregroundColor: Colors.black,
+        leading: IconButton(
+          onPressed: (){
+            Navigator.pop(context);
+          },
+          icon: const Icon(Icons.arrow_back_ios_new_outlined),
+        ),
+        centerTitle: true,
+        title: const Text('Upcoming Appointments',textAlign: TextAlign.center,style: TextStyle(color: Colors.black)),
       ),
       body: Stack(
         children: [buildUpcomingAppointmentsList()],

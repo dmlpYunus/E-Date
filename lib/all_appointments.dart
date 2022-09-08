@@ -129,7 +129,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
                 return Center(
                   child: ListTile(
                     onTap: (){
-                      appointmentOnTap();
+                      appointmentOnTap(appointments);
                     },
                     contentPadding: const EdgeInsets.symmetric(horizontal: 15),
                     leading: Image.asset('images/calendar.png'),
@@ -148,7 +148,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
     );
   }
 
-  appointmentOnTap(){
+  appointmentOnTap(QueryDocumentSnapshot appointment){
     showDialog(
         context: context,
         builder: (BuildContext context) {
@@ -157,18 +157,19 @@ class _AllAppointmentsState extends State<AllAppointments>{
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20)),
             child: Container(
-              height: 200,
+              height: height*0.5,
               width: 320,
-              padding: const EdgeInsets.all(12),
+              padding: const EdgeInsets.only(right: 12,left: 12),
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: <Widget>[
+                  const Text('Appointment Details',style: TextStyle(fontSize: 24)),
                   const SizedBox(
                     height: 10,
                   ),
-                  const Text(
-                    "Deny Reason",
-                    style: TextStyle(
+                   Text(
+                    "Appointment ID : ${appointment.id}",
+                    style: const TextStyle(
                         color: Colors.black,
                         fontSize: 16,
                         fontWeight: FontWeight.bold),
@@ -176,28 +177,52 @@ class _AllAppointmentsState extends State<AllAppointments>{
                   const SizedBox(
                     height: 30,
                   ),
-                  const TextField(
-                    style: TextStyle(color: Colors.black),
-                    autofocus: true,
-                    decoration: InputDecoration(
-                        hintText: 'Specify the reason for the refusal',
-                        hintStyle: TextStyle(color: Colors.black)),
+                   Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}',
+                    style: const TextStyle(color: Colors.black),
                   ),
                   const SizedBox(
                     height: 20,
                   ),
+                  Text('Instructor ID : ${appointment['instructorId']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  Text('Student ID : ${appointment['studentId']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),Text('Student UID : ${appointment['studentUID']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
                   SizedBox(
                     width: 320,
-                    child: ElevatedButton(
-                      onPressed: () {
-                        /*setState(() {
-                          appointments.doc(appointment.id).update({'status': 'Denied'});
-                          appointments.doc(appointment.id).update({'reason': 'Denied'});
-                          displaySnackBar('Appointment Denied');
-                        });*/
-                        Navigator.of(context).pop();
-                      },
-                      child: const Text("Submit"),
+                    child: Row(
+                      children : [
+                        ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            appointmentsdb.doc(appointment.id).update({'status' : 'cancelled'});
+                            Navigator.pop(context);
+                          });
+                        },
+                          style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                              shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                        child: const Text("Cancel",style: TextStyle(color: Colors.red)),
+
+                      ),
+                        OutlinedButton(
+                          onPressed: (){},
+                          style: OutlinedButton.styleFrom(
+                            side: BorderSide(width: 3,color: Colors.transparent),
+                            shadowColor: Colors.transparent,
+                            backgroundColor: Colors.transparent
+                          ),
+                          child: const Text("Ok"),
+
+                        ),]
                     ),
                   )
                 ],
@@ -244,9 +269,6 @@ class _AllAppointmentsState extends State<AllAppointments>{
                 fontSize: 22,
                 fontWeight: FontWeight.bold,
               )),
-          SizedBox(width: width*0.15),
-          IconButton(onPressed: (){
-          }, icon: Icon(Icons.cancel_rounded))
         ],
       ),
     );

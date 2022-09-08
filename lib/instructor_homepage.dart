@@ -138,14 +138,17 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     return Container(
         width: width * 0.75,
         height: height * 0.2,
+        margin: EdgeInsets.only(top:height *0.15),
         child: FutureBuilder(
           future: _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get(),
           builder: (context, AsyncSnapshot<DocumentSnapshot>snapshot) {
             if(snapshot.hasData){
               return Column(
                 mainAxisAlignment: MainAxisAlignment.center,
-                children:  [Text('${snapshot.data!.get('email')}'),
-                  Text('${snapshot.data!.get('role')}')]
+                children:  [
+                  Image.asset('images/instructor.png',height: height*0.15,width: width*0.7),
+                  Text('${snapshot.data!.get('email')}'),
+                  Text(capitalizeFirstLetter(snapshot.data!.get('role')))]
               );
             }else if(snapshot.hasError){
               return Column(
@@ -160,6 +163,11 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
           },
         )
     );
+  }
+
+  String capitalizeFirstLetter(String s){
+    String capitalizedString = s.characters.first.toUpperCase()+ s.substring(1)  ;
+    return capitalizedString;
   }
 
 
