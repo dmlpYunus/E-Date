@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutterfirebasedeneme/main.dart';
@@ -15,7 +16,8 @@ class AppointmentApproval extends StatefulWidget {
 }
 
 class _AppointmentApprovalState extends State<AppointmentApproval> {
-  FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   AuthService authService = AuthService();
   late Map<String, dynamic> currentUser;
   double width = 0.0;
@@ -83,7 +85,8 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
             child: StreamBuilder(
                 stream: appointments
                     .where('dateTime', isGreaterThanOrEqualTo: DateTime.now())
-                    //.where('status',isEqualTo: 'pending')
+                    .where('status',isEqualTo: 'pending')
+                    .where('instructorId',isEqualTo: _firebaseAuth.currentUser!.uid)
                     .orderBy('dateTime', descending: false)
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -150,10 +153,7 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
   }
 
   approveAppointment(QueryDocumentSnapshot appointment) async {
-    //appointments.doc(appointment.id).update({'status': 'Approved'});
-    DocumentSnapshot student = await _firestore.collection('users').doc(appointment['studentUID']).get();
-    print(student.get('name'));
-    print(currentUser['name']);
+    await appointments.doc(appointment.id).update({'status': 'Approved'});
     await _firestore.collection('users').doc(appointment['studentUID']).get().then((student) {
           displaySnackBar('Appointment Approved');
           sendNotification(student.get('fcmToken'),'${currentUser['name']} ${currentUser['surname']}');

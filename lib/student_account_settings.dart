@@ -98,13 +98,35 @@ class _StudentAccountSettingsState extends State<StudentAccountSettings> {
                           onPressed: () {
                             Navigator.push(context, MaterialPageRoute(builder: (context) => const ChangePasswordPage(),));
                           },
-                          child: const Text('Change Password')),
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateColor.resolveWith(
+                                    (states) => Colors.transparent),
+                            shadowColor: MaterialStateColor.resolveWith(
+                                    (states) => Colors.transparent),
+                            fixedSize: MaterialStateProperty.resolveWith(
+                                    (states) => Size(width * 0.55, 10)),
+                            side: MaterialStateBorderSide.resolveWith(
+                                    (states) =>
+                                const BorderSide(color: Colors.black)),
+                          ),
+                          child: const Text('Change Password',style: TextStyle(color: Colors.black))),
                       ElevatedButton(
                           onPressed: () {
                             authService.logOut();
                             Navigator.pop(context);
                           },
-                          child: const Text('LogOut'))
+                          style: ButtonStyle(
+                            backgroundColor: MaterialStateColor.resolveWith(
+                                    (states) => Colors.transparent),
+                            shadowColor: MaterialStateColor.resolveWith(
+                                    (states) => Colors.transparent),
+                            fixedSize: MaterialStateProperty.resolveWith(
+                                    (states) => Size(width * 0.55, 10)),
+                            side: MaterialStateBorderSide.resolveWith(
+                                    (states) =>
+                                const BorderSide(color: Colors.black)),
+                          ),
+                          child: const Text('LogOut',style: TextStyle(color: Colors.black)))
                     ],
                   ),
                 ),

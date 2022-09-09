@@ -3,15 +3,15 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'utils/date_utils.dart' as date_utils;
 
-class StudentUpcomingAppointments extends StatefulWidget {
-  const StudentUpcomingAppointments({Key? key}) : super(key: key);
+class StudentPastAppointments extends StatefulWidget {
+  const StudentPastAppointments({Key? key}) : super(key: key);
 
   @override
-  State<StudentUpcomingAppointments> createState() =>
-      _StudentUpcomingAppointmentsState();
+  State<StudentPastAppointments> createState() =>
+      _StudentPastAppointmentsState();
 }
 
-class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointments> {
+class _StudentPastAppointmentsState extends State<StudentPastAppointments> {
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   double width = 0.0;
@@ -24,11 +24,11 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
   @override
   void initState() {
     super.initState();
-      appointmentsStream = appointments
-          .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
-          .where('dateTime', isGreaterThanOrEqualTo: DateTime.now())
-          .orderBy('dateTime', descending: false)
-          .snapshots();
+    appointmentsStream = appointments
+        .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
+        .where('dateTime', isLessThanOrEqualTo: DateTime.now())
+        .orderBy('dateTime', descending: false)
+        .snapshots();
   }
 
   @override
@@ -69,7 +69,7 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
                   status = 'cancelled';
                   appointmentsStream = appointmentsStream = appointments
                       .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
-                      .where('dateTime', isGreaterThanOrEqualTo: DateTime.now())
+                      .where('dateTime', isLessThanOrEqualTo: DateTime.now())
                       .where('status',isEqualTo: status)
                       .orderBy('dateTime', descending: false)
                       .snapshots();
@@ -86,7 +86,7 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
                   status = 'denied';
                   appointmentsStream = appointmentsStream = appointments
                       .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
-                      .where('dateTime', isGreaterThanOrEqualTo: DateTime.now())
+                      .where('dateTime', isLessThanOrEqualTo: DateTime.now())
                       .where('status',isEqualTo: status)
                       .orderBy('dateTime', descending: false)
                       .snapshots();
@@ -103,7 +103,7 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
                   status = 'pending';
                   appointmentsStream = appointmentsStream = appointments
                       .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
-                      .where('dateTime', isGreaterThanOrEqualTo: DateTime.now())
+                      .where('dateTime', isLessThanOrEqualTo: DateTime.now())
                       .where('status',isEqualTo: status)
                       .orderBy('dateTime', descending: false)
                       .snapshots();
@@ -120,7 +120,7 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
                   status = 'accepted';
                   appointmentsStream = appointmentsStream = appointments
                       .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
-                      .where('dateTime', isGreaterThanOrEqualTo: DateTime.now())
+                      .where('dateTime', isLessThanOrEqualTo: DateTime.now())
                       .where('status',isEqualTo: status)
                       .orderBy('dateTime', descending: false)
                       .snapshots();
@@ -175,19 +175,12 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
                               const Text('Denied',style : TextStyle(color: Colors.green)) :
                               const Text('Denied',style : TextStyle(color: Colors.deepPurple)),
                               leading:
-                                  Image.asset('images/calendarr.png',scale: 10),
-                              //const Icon(Icons.insert_invitation_rounded),
+                              const Icon(Icons.insert_invitation_rounded),
                               subtitle: Text(timeStampToDateTime(
                                   appointments['dateTime'])),
                               title: Text(
-                                  '${appointments['instructorName']} ${appointments['instructorSurname']}',
-                                  style:  TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    overflow: TextOverflow.ellipsis,
-                                    fontSize: 19,
-                                    decoration:  (['denied','cancelled'].contains(appointments['status'])) ? TextDecoration.lineThrough : TextDecoration.none
-                                )
-                              ),
+                                  '${appointments['instructorName']} ${appointments['instructorSurname']} '
+                                      '${appointments['studentId']}'),
                             ),
                           );
                         }).toList(),

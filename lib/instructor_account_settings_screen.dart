@@ -156,7 +156,6 @@ class _InstructorAccountSettingsState extends State<InstructorAccountSettings> {
     );
   }
 
-  buildProfileView() {}
 
   void displaySnackBar(String message) {
     var snackBar = SnackBar(

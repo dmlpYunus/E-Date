@@ -64,6 +64,7 @@ class _ReservationPageState extends State<ReservationPage> {
         ScrollController(initialScrollOffset: 70.0 * currentDateTime.day + 1);
     selectedDay = DateTime(
         currentDateTime.year, currentDateTime.month, currentDateTime.day);
+    print(selectedDay);
     selectedDateTime = DateTime(
         currentDateTime.year, currentDateTime.month, currentDateTime.day);
     getToken();
@@ -119,6 +120,9 @@ class _ReservationPageState extends State<ReservationPage> {
     selectedHourIndex = index;
     selectedDateTime =
         selectedDay.add(Duration(hours: buildHoursList()[index].hour));
+    print('Selected Day :  $selectedDay');
+    print('Selected Time :  $selectedDateTime');
+
   }
 
   void montViewOnTap(int index) {
@@ -126,6 +130,8 @@ class _ReservationPageState extends State<ReservationPage> {
     selectedDay = currentDateTime;
     clearDateTime(selectedDay);
     selectedDateTime = selectedDay;
+    print('Selected Day :  $selectedDay');
+    print('Selected Time :  $selectedDateTime');
     getAppointmentTable();
     buildHoursList();
   }
@@ -532,7 +538,7 @@ class _ReservationPageState extends State<ReservationPage> {
     appointment['dateTimeDay'] = selectedDay;
     appointment['instructorName'] = instructor.name.trim();
     appointment['instructorSurname'] = instructor.surname.trim();
-    appointment['instructorId'] = instructor.id.trim();
+    appointment['instructorId'] = instructor.id;
     appointment['studentId'] = studentId.trim();
     appointment['studentName'] = studentName.trim();
     appointment['studentSurname'] = studentSurname.trim();
@@ -563,7 +569,7 @@ class _ReservationPageState extends State<ReservationPage> {
           borderRadius: BorderRadius.circular(20)),
       title: const Text('Appointment Request Successful'),
       content: Container(
-        height: height*0.115,
+        height: height*0.12,
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -598,9 +604,16 @@ class _ReservationPageState extends State<ReservationPage> {
   }
 
   getToken() async {
-    FirebaseFirestore.instance
+    /*FirebaseFirestore.instance
         .collection('users')
         .doc(FirebaseAuth.instance.currentUser!.uid)
+        .get()
+        .then((value) {
+      token = value.get('fcmToken').toString();
+    });*/
+    FirebaseFirestore.instance
+        .collection('users')
+        .doc(instructor.id)
         .get()
         .then((value) {
       token = value.get('fcmToken').toString();

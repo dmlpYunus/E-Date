@@ -6,6 +6,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:flutterfirebasedeneme/admin_screen.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/fcm/fcm_background_handler.dart';
 import 'package:flutterfirebasedeneme/instructor_homepage.dart';
@@ -40,7 +41,6 @@ Future<void> main() async {
 
   if(FirebaseAuth.instance.currentUser != null) {
     await FirebaseMessaging.instance.getToken().then((value) {
-      print('Token $value');
       var a = {'fcmToken': value};
       FirebaseFirestore.instance
           .collection("users")
@@ -49,16 +49,6 @@ Future<void> main() async {
     });
   }
 
-  if(FirebaseAuth.instance.currentUser!= null){
-    FirebaseFirestore.instance
-        .collection("users")
-        .doc(FirebaseAuth.instance.currentUser?.uid)
-        .get()
-        .then((value) {
-      currentUser = value.data();
-      print(currentUser);
-    });
-  }
   runApp(const MaterialApp(home: const MyApp()));
 }
 
@@ -116,6 +106,7 @@ class _MyAppState extends State<MyApp> {
     return await authService.getCurrentUserRole() == 'student';
   }
 
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,8 +115,8 @@ class _MyAppState extends State<MyApp> {
             builder: (context, snapshot) {
               if (snapshot.hasData) {
                 return  FutureBuilder(
-                  future: isStudent(),
-                  builder: (BuildContext context, AsyncSnapshot<bool> snapshot) {
+                  future: authService.getCurrentUserRole(),
+                  builder: (BuildContext context, AsyncSnapshot<String> snapshot) {
                     if(snapshot.connectionState == ConnectionState.waiting){
                       return const Center(child: CircularProgressIndicator());
                     }else if(snapshot.connectionState == ConnectionState.none){
@@ -134,10 +125,12 @@ class _MyAppState extends State<MyApp> {
                       );
                     }else{
                       if (snapshot.hasData) {
-                        if (snapshot.data!) {
+                        if (snapshot.data == 'student') {
                           return  HomePage();
-                        } else {
+                        } else if(snapshot.data == 'instructor'){
                           return  InstructorHomepage();
+                        }else{
+                          return adminScreen();
                         }
                       } else {
                         return  LoginPage();
@@ -146,7 +139,6 @@ class _MyAppState extends State<MyApp> {
                   },
                 );
               } else {
-                print('NO LOGGED USER');
                 return  LoginPage();
               }
             })
@@ -183,6 +175,5 @@ class _MyAppState extends State<MyApp> {
             }
           }
       ),*/
-
   }
 }

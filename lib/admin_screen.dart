@@ -1,3 +1,6 @@
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfirebasedeneme/admin_create_appointment.dart';
 import 'package:flutterfirebasedeneme/all_appointments.dart';
@@ -73,31 +76,17 @@ class _adminScreenState extends State<adminScreen> {
     return Container(
       width: width,
       height: height * 0.2,
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Row(
-          children: [
-            Padding(
-                padding: const EdgeInsets.only(left: 20, right: 20),
-                child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 30,
-                    ))),
-            Padding(
-              padding: EdgeInsets.only(left: width * 0.15),
-              child: const Text('Admin Homepage',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  )),
-            ),
-          ],
-        ),
+      child: Row(
+        //crossAxisAlignment: CrossAxisAlignment.center,
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: const [
+           Text('Admin Homepage',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              )),
+        ],
       ),
     );
   }
@@ -181,5 +170,15 @@ class _adminScreenState extends State<adminScreen> {
         ),
 
         child: const Text("Log-Out",style: TextStyle(color: Colors.black),));
+  }
+
+  void updateFcmToken() async {
+    await FirebaseMessaging.instance.getToken().then((value) {
+      //var a = {'fcmToken': value};
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .update({'fcmToken' : value});
+    });
   }
 }

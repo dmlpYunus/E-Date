@@ -39,7 +39,7 @@ class AuthService {
   }
 
    Future<String> getCurrentUserId() async {
-     User? user = await _mauth.currentUser;
+     User? user =  _mauth.currentUser;
       return user!.uid;
   }
 

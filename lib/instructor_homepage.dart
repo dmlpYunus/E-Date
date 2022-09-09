@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutterfirebasedeneme/appointment_approval_screen.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
@@ -22,13 +23,12 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
   AuthService authService = AuthService();
   List<dynamic> instructorAppointmentsList = [];
   List<DateTime> todaysAppointmentHours = [];
-  late var currentUser;
+  DateTime currentDateTime = DateTime.now();
   late DateTime today;
   double width = 0.0;
   double height = 0.0;
   CollectionReference appointments =
       FirebaseFirestore.instance.collection("appointments");
-
   @override
   Widget build(BuildContext context) {
     width = MediaQuery.of(context).size.width;
@@ -63,6 +63,14 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
         ));
   }
 
+  @override
+  void initState() {
+    super.initState();
+    updateFcmToken();
+    today =
+        //DateTime.utc(DateTime.now().year,DateTime.now().month,DateTime.now().day);
+    DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().add(const Duration(hours: 3)).day);
+  }
 
   buildInstructorWelcome() {
     return Container(
@@ -75,8 +83,6 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
       ),
     );
   }
-
-
 
   timeStampToDateTime(Timestamp timeStamp) {
     return '${date_util.DateUtils.fullDayFormat(timeStamp.toDate())} ${timeStamp.toDate().hour.toString()}.00';
@@ -124,94 +130,6 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     );
   }
 
-
-
-  buildDrawer() {
-    return Drawer(
-      width: width * 0.75,
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          buildUserInfo(),
-          buildDrawerButtons(),
-        ],
-      ),
-    );
-  }
-
-  buildUserInfo()  {
-    return Container(
-        width: width * 0.75,
-        height: height * 0.2,
-        margin: EdgeInsets.only(top:height *0.15),
-        child: FutureBuilder(
-          future: _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get(),
-          builder: (context, AsyncSnapshot<DocumentSnapshot>snapshot) {
-            if(snapshot.hasData){
-              return Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children:  [
-                  Image.asset('images/instructor.png',height: height*0.15,width: width*0.7),
-                  Text('${snapshot.data!.get('email')}'),
-                  Text(capitalizeFirstLetter(snapshot.data!.get('role')))]
-              );
-            }else if(snapshot.hasError){
-              return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children:  [Text(snapshot.error.toString()),
-            Text('${snapshot.data!.get('email')}')]);
-            } else{
-              return Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children:  const [Text('EMPTY')]);
-            }
-          },
-        )
-    );
-  }
-
-  String capitalizeFirstLetter(String s){
-    String capitalizedString = s.characters.first.toUpperCase()+ s.substring(1)  ;
-    return capitalizedString;
-  }
-
-
-  List<DateTime> buildHoursList() {
-    List<DateTime> hours = [];
-    for (int i = 8; i <= 20; i++) {
-      hours.add(today.add(Duration(hours: i)));
-    }
-    return hours;
-  }
-
-  /*getAppointmentTable() async {
-    await _firestore
-        .collection('appointments')
-        .where('dateTimeDay', isEqualTo: today)
-        //.where('instructorId', isEqualTo:_firebaseAuth.currentUser!.uid)
-        .get()
-        .then((snapshot) {
-      instructorAppointmentsList.clear();
-      if (snapshot.size == 0) {
-        return;
-      }
-      for (int i = 0; i < snapshot.size; i++) {
-        instructorAppointmentsList.add(snapshot.docs[i].data());
-        print(snapshot.docs[i].get('dateTime'));
-        todaysAppointmentHours.add(snapshot.docs[i].get('dateTime').toDate());
-      }
-    });
-  }*/
-
-  @override
-  void initState() {
-    super.initState();
-    today =
-        DateTime(DateTime.now().year, DateTime.now().month, DateTime.now().day);
-    currentUser =  authService.getCurrentUser();
-  }
-
-
   Widget hoursView() {
     return Container(
       margin: EdgeInsets.fromLTRB(10, height * 0.1, 15, 15),
@@ -226,6 +144,7 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
                 .where('instructorId',
                     isEqualTo: _firebaseAuth.currentUser!.uid)
                 .where('dateTimeDay', isEqualTo: today)
+                .where('status',isEqualTo: 'Approved')
                 .snapshots(),
             builder: (
               context,
@@ -233,13 +152,13 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
             ) {
               return ListTile(
                 onTap: (){
-                  QueryDocumentSnapshot tile =snapshot.data!.docs
+                  List<QueryDocumentSnapshot<Object?>> tile =snapshot.data!.docs
                       .where((element) =>
                   buildHoursList()[index] ==
-                      (element.get('dateTime').toDate())).first;
-                 if(tile.get('dateTime').toDate() == buildHoursList()[index]){
+                      (element.get('dateTime').toDate())).toList();
+                 if(tile.isNotEmpty){
                    setState(() {
-                     appointmentOnTap(tile);
+                     appointmentOnTap(tile.first);
                    });
                  }
                 },
@@ -340,6 +259,7 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
                   ),
                   Text(
                     "Appointment ID : ${appointment.id}",
+                    overflow: TextOverflow.fade,
                     style: const TextStyle(
                         color: Colors.black,
                         fontSize: 16,fontWeight: FontWeight.bold),
@@ -348,12 +268,6 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
                     height: 10,
                   ),
                   Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}   Hour : ${appointment['dateTime'].toDate().hour}:00',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text('Instructor ID : ${appointment['instructorId']}',
                     style: const TextStyle(color: Colors.black),
                   ),
                   const SizedBox(
@@ -403,6 +317,50 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
         });
   }
 
+  buildDrawer() {
+    return Drawer(
+      width: width * 0.75,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          buildUserInfo(),
+          buildDrawerButtons(),
+        ],
+      ),
+    );
+  }
+
+  buildUserInfo()  {
+    return Container(
+        width: width * 0.75,
+        height: height * 0.2,
+        margin: EdgeInsets.only(top:height *0.15),
+        child: FutureBuilder(
+          future: _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get(),
+          builder: (context, AsyncSnapshot<DocumentSnapshot>snapshot) {
+            if(snapshot.hasData){
+              return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children:  [
+                    Image.asset('images/instructor.png',height: height*0.15,width: width*0.7),
+                    Text('${snapshot.data!.get('email')}'),
+                    Text(capitalizeFirstLetter(snapshot.data!.get('role')))]
+              );
+            }else if(snapshot.hasError){
+              return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children:  [Text(snapshot.error.toString()),
+                    Text('${snapshot.data!.get('email')}')]);
+            } else{
+              return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children:  const [Text('EMPTY')]);
+            }
+          },
+        )
+    );
+  }
+
   buildDrawerButtons() {
     return Container(
       width: width * 0.75,
@@ -411,12 +369,12 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           OutlinedButton(
-            style: OutlinedButton.styleFrom(
-                primary: Colors.black,
-                shadowColor: Colors.transparent,
-                fixedSize: Size.fromWidth(width * 0.5),
-                side: const BorderSide(color: Colors.black,width: 1.2),
-            shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10)))),
+              style: OutlinedButton.styleFrom(
+                  primary: Colors.black,
+                  shadowColor: Colors.transparent,
+                  fixedSize: Size.fromWidth(width * 0.5),
+                  side: const BorderSide(color: Colors.black,width: 1.2),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10)))),
               onPressed: () {
                 Navigator.push(
                     context,
@@ -436,9 +394,9 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            const InstUpcomingAppointments()));
+                        const InstUpcomingAppointments()));
               },
-              child: const Text('Upcoming Appointments',style: TextStyle(fontSize: 15.5))),
+              child: const Text('Upcoming Appointments',style: TextStyle(fontSize: 14.78))),
           OutlinedButton(
               style: OutlinedButton.styleFrom(
                   primary: Colors.black,
@@ -451,11 +409,54 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                            const InstructorAccountSettings()));
+                        const InstructorAccountSettings()));
               },
               child: const Text('Account Settings',style: TextStyle(fontSize: 15.5)))
         ],
       ),
     );
+  }
+
+  String capitalizeFirstLetter(String s){
+    String capitalizedString = s.characters.first.toUpperCase()+ s.substring(1)  ;
+    return capitalizedString;
+  }
+
+  List<DateTime> buildHoursList() {
+    List<DateTime> hours = [];
+    for (int i = 8; i <= 20; i++) {
+      hours.add(today.add(Duration(hours: i)));
+    }
+    return hours;
+  }
+
+  /*getAppointmentTable() async {
+    await _firestore
+        .collection('appointments')
+        .where('dateTimeDay', isEqualTo: today)
+        //.where('instructorId', isEqualTo:_firebaseAuth.currentUser!.uid)
+        .get()
+        .then((snapshot) {
+      instructorAppointmentsList.clear();
+      if (snapshot.size == 0) {
+        return;
+      }
+      for (int i = 0; i < snapshot.size; i++) {
+        instructorAppointmentsList.add(snapshot.docs[i].data());
+        print(snapshot.docs[i].get('dateTime'));
+        todaysAppointmentHours.add(snapshot.docs[i].get('dateTime').toDate());
+      }
+    });
+  }*/
+
+  void updateFcmToken() async {
+    await FirebaseMessaging.instance.getToken().then((value) {
+      //var a = {'fcmToken': value};
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .update({'fcmToken' : value});
+      print('FCM TOKEN UPDATED');
+    });
   }
 }

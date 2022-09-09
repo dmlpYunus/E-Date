@@ -1,10 +1,12 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutterfirebasedeneme/admin_screen.dart';
 import 'package:flutterfirebasedeneme/search_widget.dart';
 import 'package:flutterfirebasedeneme/student_account_settings.dart';
+import 'package:flutterfirebasedeneme/student_past_appointments_screen.dart';
 import 'package:flutterfirebasedeneme/student_upcoming_appointments_screen.dart';
 import 'Model/instructor.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
@@ -37,6 +39,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
+    updateFcmToken();
     instructorsStream = instructorsdb.where('role', isEqualTo: 'instructor')
         .orderBy("name")
         .snapshots();
@@ -132,15 +135,16 @@ class _HomePageState extends State<HomePage> {
                   primary: Colors.black,
                   shadowColor: Colors.transparent,
                   fixedSize: Size.fromWidth(width * 0.5),
-                  side: const BorderSide(color: Colors.black,width: 1.2),
+                  side: const BorderSide(color: Colors.black,width: 1),
                   shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10)))),
               onPressed: () {
                 Navigator.push(
                     context,
                     MaterialPageRoute(
-                        builder: (context) => const StudentAccountSettings()));
+                        builder: (context) =>
+                        const StudentUpcomingAppointments()));
               },
-              child: const Text('Account Settings',style: TextStyle(fontSize: 15.5))),
+              child: const Text('Upcoming Appointments',style: TextStyle(fontSize: 14.78))),
           OutlinedButton(
               style: OutlinedButton.styleFrom(
                   primary: Colors.black,
@@ -153,9 +157,23 @@ class _HomePageState extends State<HomePage> {
                     context,
                     MaterialPageRoute(
                         builder: (context) =>
-                        const StudentUpcomingAppointments()));
+                        const StudentPastAppointments()));
               },
-              child: const Text('Upcoming Appointments',style: TextStyle(fontSize: 14.78))),
+              child: const Text('Past Appointments',style: TextStyle(fontSize: 14.78))),
+          OutlinedButton(
+              style: OutlinedButton.styleFrom(
+                  primary: Colors.black,
+                  shadowColor: Colors.transparent,
+                  fixedSize: Size.fromWidth(width * 0.5),
+                  side: const BorderSide(color: Colors.black,width: 1.2),
+                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10)))),
+              onPressed: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) => const StudentAccountSettings()));
+              },
+              child: const Text('Account Settings',style: TextStyle(fontSize: 15.5))),
         ],
       ),
     );
@@ -208,7 +226,7 @@ class _HomePageState extends State<HomePage> {
 
   buildInstructorsList() {
     return Container(
-      height: height * 0.5,
+      height: height * 0.7,
       margin: EdgeInsets.only(top: height * 0.1),
       child: StreamBuilder(
           stream: instructorsStream,
@@ -248,25 +266,22 @@ class _HomePageState extends State<HomePage> {
   buildAdminPageButton() {
     return Container(
       width: width,
-      height: height * 0.15,
-      margin: EdgeInsets.only(top: height * 0.6),
+      height: height * 0.1,
+      margin: EdgeInsets.only(top: height * 0.8),
       child: Column(
         children: [
           ElevatedButton(
+            style: ElevatedButton.styleFrom(
+                primary: Colors.black,
+                shadowColor: Colors.transparent,
+                fixedSize: Size.fromWidth(width * 0.5),
+                side: const BorderSide(color: Colors.black,width: 1),
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(10)))),
             onPressed: () {
               Navigator.push(context, MaterialPageRoute(
                 builder: (context) => const adminScreen(),));
             },
             child: const Text('Admin Page'),
-
-          ),
-          ElevatedButton(
-            onPressed: () {
-              Navigator.push(context, MaterialPageRoute(
-                builder: (context) => const StudentAccountSettings(),));
-            },
-            child: const Text('Account Settings'),
-
           ),
         ],
       ),
@@ -288,22 +303,30 @@ class _HomePageState extends State<HomePage> {
   }
 
   Instructor buildInstructor(QueryDocumentSnapshot inst) {
-    try{
-      return Instructor.withFcm(inst['UID'],
-          inst['name'],
-          inst['email'],
-          inst['surname'], "Computer", inst['fcmToken']);
-    }
-    on Exception catch (error){
-    return Instructor.withValues(
-    inst['UID'], inst['name'], inst['email'], inst['surname'],
-    "Computer");
-    }
-    if (inst['fcmToken'] == null) {
+   Map<String,dynamic> instMap = inst.data() as Map<String,dynamic>;
+   if(instMap.containsKey('fcmToken')){
+     print('WİTH FCM');
+     return Instructor.withFcm(inst['UID'],
+         inst['name'],
+         inst['email'],
+         inst['surname'], "Computer", inst['fcmToken']);
+   }else{
+     print('NOT FCM');
+     return Instructor.withValues(
+         inst['UID'], inst['name'], inst['email'], inst['surname'],
+         "Computer");
+   }
+  }
 
-    } else {
-
-    }
+  void updateFcmToken() async {
+    await FirebaseMessaging.instance.getToken().then((value) {
+      //var a = {'fcmToken': value};
+      FirebaseFirestore.instance
+          .collection("users")
+          .doc(FirebaseAuth.instance.currentUser?.uid)
+          .update({'fcmToken' : value});
+      print('FCM TOKEN UPDATED');
+    });
   }
 
   String capitalizeFirstLetter(String s){
