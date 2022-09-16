@@ -45,11 +45,19 @@ dependencies:
   http: ^0.13.5
   flutter_slidable: ^2.0.0
   mailer: ^5.2.0
+  oauth2: ^2.0.0
+  flutter_secure_storage: ^6.0.0
+  webview_flutter: ^3.0.4
+  dartz: ^0.10.1
+  url_launcher: ^6.1.5
+  uni_links: ^0.5.1
 
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+
+
 
 
   # The "flutter_lints" package below contains a set of recommended lints to
@@ -58,6 +66,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

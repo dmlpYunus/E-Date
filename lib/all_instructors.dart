@@ -1,12 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutterfirebasedeneme/admin_screen.dart';
 import 'package:flutterfirebasedeneme/search_widget.dart';
-import 'Model/instructor.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
-import 'package:flutterfirebasedeneme/reservation_screen.dart';
 
 
 class AllInstructors extends StatefulWidget {
@@ -28,6 +24,7 @@ class _AllInstructorsState extends State<AllInstructors>{
 
   @override
   void initState() {
+    super.initState();
     instructorsStream = instructorsdb.orderBy("name").snapshots();
   }
 

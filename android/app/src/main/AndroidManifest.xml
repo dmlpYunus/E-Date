@@ -1,9 +1,32 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.flutterfirebasedeneme">
+    <!-- Provide required visibility configuration for API level 30 and above -->
+    <queries>
+        <!-- Place inside the <queries> element. -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <category android:name="android.intent.category.BROWSABLE" />
+            <data android:scheme="https" />
+        </intent>
+        <!-- If your app checks for SMS support -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="sms" />
+        </intent>
+        <!-- If your app checks for call support -->
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:scheme="tel" />
+        </intent>
+    </queries>
+
    <application
         android:label="flutterfirebasedeneme"
         android:name="${applicationName}"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher"
+        android:usesCleartextTraffic="true">
+
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -24,6 +47,17 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+            <!-- Deep linking -->
+            <meta-data android:name="flutter_deeplinking_enabled" android:value="true" />
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW"/>
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="flutterdenemee.page.link"
+                    android:path="/y1E4"/>
+                <data android:scheme="http" />
+            </intent-filter>
+
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

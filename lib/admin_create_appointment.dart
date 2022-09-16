@@ -52,6 +52,7 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
 
   @override
   void initState() {
+    super.initState();
     title = 'Select Student';
     studentSelected = false;
     instructorSelected = false;

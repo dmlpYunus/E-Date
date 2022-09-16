@@ -90,7 +90,6 @@ class _InstUpcomingAppointmentState extends State<InstUpcomingAppointments> {
                       );
                     }
                   }
-                  ;
                 }),
           ),
         ],

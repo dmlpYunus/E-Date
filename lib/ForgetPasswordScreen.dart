@@ -9,7 +9,6 @@ class ForgetPasswordPage extends StatefulWidget {
 }
 
 class _ForgetPasswordPage extends State<ForgetPasswordPage> with AccountValidationMixin {
-  @override
   AuthService authService = AuthService();
   final emailEditor = TextEditingController();
   late String _forgetEmail;
