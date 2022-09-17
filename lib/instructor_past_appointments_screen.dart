@@ -49,7 +49,7 @@ class _InstPastAppointmentsState extends State<InstPastAppointments> {
             child: StreamBuilder(
                 stream: appointments
                     .where('dateTime', isLessThan: DateTime.now())
-                //.where('status',isEqualTo: 'pending')
+                    .where('status',isEqualTo: 'Approved')
                     .orderBy('dateTime', descending: false)
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -68,9 +68,9 @@ class _InstPastAppointmentsState extends State<InstPastAppointments> {
                         child: ListTile(
                           contentPadding:
                           const EdgeInsets.symmetric(horizontal: 15),
-                          trailing: const Icon(Icons.access_alarm_rounded),
+                          trailing: const Icon(Icons.done_all_outlined,color: Colors.green),
                           leading:
-                          const Icon(Icons.insert_invitation_rounded),
+                          Image.asset('images/calendarr.png'),
                           subtitle: Text(
                               timeStampToDateTime(appointments['dateTime'])),
                           title: Text(

@@ -5,8 +5,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutterfirebasedeneme/main.dart';
 import 'package:mailer/mailer.dart';
+import 'package:uni_links/uni_links.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'utils/date_utils.dart' as date_utils;
 import 'package:http/http.dart' as http;
+import 'package:oauth2/oauth2.dart' as oauth2;
 import 'auth_service.dart';
 
 class AppointmentApproval extends StatefulWidget {
@@ -22,6 +25,7 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
   late Map<String, dynamic> currentUser;
   double width = 0.0;
   double height = 0.0;
+  String? queryCode = '';
   CollectionReference appointments =
       FirebaseFirestore.instance.collection("appointments");
   late Stream<QuerySnapshot<Object?>> app;
@@ -153,7 +157,11 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
   }
 
   approveAppointment(QueryDocumentSnapshot appointment) async {
-    await appointments.doc(appointment.id).update({'status': 'Approved'});
+    var client = await createClient();
+    var response = await client.post(Uri.parse('https://api.zoom.us/v2/users/me/meetings'),headers: createMeetingPostHeader(),body: createMeetingPostBody(appointment));
+    print(response.body);
+    var zoomLink = await jsonDecode(await response.body)['join_url'];
+    await appointments.doc(appointment.id).update({'status': 'Approved','zoomLink' : zoomLink});
     await _firestore.collection('users').doc(appointment['studentUID']).get().then((student) {
           displaySnackBar('Appointment Approved');
           sendNotification(student.get('fcmToken'),'${currentUser['name']} ${currentUser['surname']}');
@@ -294,6 +302,95 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
     } catch (e) {
       displaySnackBar(e.toString());
     }
+  }
+
+  Future<oauth2.Client> createClient () async{
+    const clientId = 'HGI6qXptRICTxqQ9G5ynAw';  //Client ID
+    const clientSecret = 'G1z4aoYbTZy7pYwbWQzR9eitLj2nFAxW';   //Client Secret
+    const scopes = [];
+    final authorizationEndpoint =
+    Uri.parse('https://zoom.us/oauth/authorize');
+    final tokenEndpoint =
+    Uri.parse('https://zoom.us/oauth/token');
+    final redirectUrl =
+    Uri.parse('https://flutterdenemee.page.link/y1E4');
+
+
+    var grant = oauth2.AuthorizationCodeGrant(
+        clientId, authorizationEndpoint, tokenEndpoint,
+        secret: clientSecret,basicAuth: false);
+
+    var authorizationUrl = grant.getAuthorizationUrl(redirectUrl);
+
+    await launchUrl(authorizationUrl,mode: LaunchMode.externalNonBrowserApplication);
+
+
+    var responseUrl = await uriLinkStream.firstWhere((element) =>
+        element.toString().
+        startsWith(redirectUrl.toString()));
+    //await listen(redirectUrl);
+
+
+    if(responseUrl == null){
+      throw Exception('Response URL was Null.');
+    }
+
+    queryCode = responseUrl.queryParameters['code'];
+    return await grant.handleAuthorizationResponse(responseUrl.queryParameters);
+  }
+
+  Future<void> redirect (Uri authorizationUrl) async {
+    if(await canLaunchUrl(authorizationUrl)){
+      await launchUrl(authorizationUrl);
+    }else{
+      throw Exception('Unable to launch authorization URL');
+    }
+  }
+
+
+  Future<Uri?> listen(Uri redirectUrl) async {
+    return await uriLinkStream.firstWhere((element) =>
+        element.toString().
+        startsWith(redirectUrl.toString()));
+  }
+
+  createMeetingPostHeader(){
+    /// TODO : IMPLEMENT AUTHORIZATION CODE ALL FOR ALL TIMES
+    return <String, String>{
+      'Content-Type': 'application/json',
+      'Authorization':
+      'Bearer eyJhbGciOiJIUzUxMiIsInYiOiIyLjAiLCJraWQiOiJmMDhmZjBmOC01NjE2LTQ2YjctOTY4Yi03NDM5YjAxNDRhY2MifQ.eyJ2ZXIiOjcsImF1aWQiOiJkNmViZmU4NWI0NzM2Y2M4ZWM0NjJmOTJiMmI3MjE1NiIsImNvZGUiOiJibTVIS3pXVmpIXzBaRkw2SHF1UmFhRU82NEMtcTlOWUEiLCJpc3MiOiJ6bTpjaWQ6SEdJNnFYcHRSSUNUeHFROUc1eW5BdyIsImdubyI6MCwidHlwZSI6MCwidGlkIjowLCJhdWQiOiJodHRwczovL29hdXRoLnpvb20udXMiLCJ1aWQiOiIwWkZMNkhxdVJhYUVPNjRDLXE5TllBIiwibmJmIjoxNjYzNDQ2NTczLCJleHAiOjE2NjM0NTAxNzMsImlhdCI6MTY2MzQ0NjU3MywiYWlkIjoiNTVieDQyNjlTRHlzaHJ6WGZUd3RXQSIsImp0aSI6IjNjZTYzYjljLTc3MmItNDBlNi05YWM3LWEzOWJiZjAyY2E3YyJ9.LKlS26vfuNDdwn8YoGFsc8agBEuVIT-uGNr4NLJNkdWbUWmR9zlm_6ezguVri7igZRE5YWq-fNWNQL9pMdRw4A'
+    };
+  }
+
+  createMeetingPostBody(QueryDocumentSnapshot appointment){
+    return jsonEncode(
+        <String,dynamic>{
+          "topic": "${appointment['studentName']} - ${appointment['instructorName']} Appointment",
+          "type": 2,
+          "start_time": "${appointment['dateTime'].toDate().year.toString()}-${appointment['dateTime'].toDate().month.toString()}-${appointment['dateTime'].toDate().day.toString()}T${appointment['dateTime'].toDate().hour.toString()}: 00: 00",
+          "duration": "60",
+          "timezone": "Europe/Istanbul",
+          "agenda": "Isık University Instructor Appointment",
+          //"schedule_for": appointment['studentMail'],
+          "recurrence": <String,dynamic> {"type": 1,
+            "repeat_interval": 1
+          },
+          "settings":<String,dynamic> {"host_video": "true",
+            "participant_video": "true",
+            "join_before_host": "true",
+            "mute_upon_entry": "False",
+            "watermark": "true",
+            "audio": "voip",
+            "auto_recording": "cloud",
+            "meeting_invitees": [
+              <String,dynamic> {
+                "email": appointment['studentMail']
+              }
+            ]
+          }
+        }
+    );
   }
 
   currentUserMap(){

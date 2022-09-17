@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'Model/instructor.dart';
 import 'utils/colors_util.dart';
@@ -37,7 +36,6 @@ class _ReservationPageState extends State<ReservationPage> {
   late int selectedHourIndex, selectedMonthIndex;
   List<DateTime> instructorAppointmentsList = [];
   DateTime currentDateTime = DateTime.now();
-  List<String> todos = <String>[];
   TextEditingController controller = TextEditingController();
 
   @override
@@ -94,7 +92,7 @@ class _ReservationPageState extends State<ReservationPage> {
         .collection('appointments')
         .where('dateTimeDay', isEqualTo: selectedDay)
         .where('instructorId', isEqualTo: instructor.id)
-        .where('status',isNotEqualTo: ['pending','cancelled'])
+        .where('status',whereNotIn: ['pending','Cancelled','Denied','Declined'])
         .get()
         .then((snapshot) {
       instructorAppointmentsList.clear();
@@ -150,7 +148,7 @@ class _ReservationPageState extends State<ReservationPage> {
                 .where('instructorId',
                 isEqualTo: instructor.id)
                 .where('dateTimeDay', isEqualTo: selectedDay)
-                .where('status',whereNotIn: ['denied','cancelled'])
+                .where('status',whereNotIn: ['Denied','Cancelled'])
                 .snapshots(),
             builder: (
                 context,
@@ -206,83 +204,6 @@ class _ReservationPageState extends State<ReservationPage> {
     );
   }
 
-  /*Widget hoursView() {
-    return Container(
-      margin: EdgeInsets.fromLTRB(10, height * 0.3, 15, 15),
-      width: width,
-      height: height * 0.70,
-      child: ListView.builder(
-        itemCount: buildHoursList().length - 1,
-        itemBuilder: (context, index) {
-          return ListTile(
-            title: Text(
-                '${buildHoursList()[index].hour}.00 - ${buildHoursList()[index + 1].hour}.00',
-                style: const TextStyle(
-                  color: Colors.blueGrey,
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                )),
-            autofocus: true,
-            contentPadding: const EdgeInsets.only(right: 15, left: 15),
-            leading: const Icon(
-              Icons.access_time,
-              color: Colors.grey,
-              size: 28,
-            ),
-            trailing: (instructorAppointmentsList
-                    .contains(buildHoursList()[index]))
-                ? const Text("Busy", style: TextStyle(color: Colors.redAccent))
-                : const Text("Free", style: TextStyle(color: Colors.green)),
-            shape: Border(
-                top: BorderSide(color: Colors.grey.withOpacity(0.2)),
-                bottom: BorderSide(color: Colors.grey.withOpacity(0.2))),
-            onTap: () {
-              setState(() {
-                hoursViewOnTap(index);
-              });
-            },
-          );
-        },
-      ),
-    );
-  }*/
-
-  Widget todoList() {
-    return Container(
-      margin: EdgeInsets.fromLTRB(10, height * 0.38, 10, 10),
-      width: width,
-      height: height * 0.60,
-      child: ListView.builder(
-          itemCount: todos.length,
-          padding: EdgeInsets.zero,
-          itemBuilder: (BuildContext context, int index) {
-            return Container(
-              margin: const EdgeInsets.fromLTRB(0, 0, 0, 15),
-              width: width - 20,
-              height: 70,
-              decoration: BoxDecoration(
-                  color: Colors.white54,
-                  borderRadius: BorderRadius.circular(20),
-                  boxShadow: const [
-                    BoxShadow(
-                        color: Colors.white12,
-                        blurRadius: 2,
-                        offset: Offset(2, 2),
-                        spreadRadius: 3)
-                  ]),
-              child: Center(
-                child: Text(
-                  todos[index],
-                  style: const TextStyle(
-                      color: Colors.black,
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold),
-                ),
-              ),
-            );
-          }),
-    );
-  }
 
   previousMonth() {
     currentDateTime = date_util.DateUtils.previousMonth(currentDateTime);
@@ -542,6 +463,7 @@ class _ReservationPageState extends State<ReservationPage> {
     appointment['studentId'] = studentId.trim();
     appointment['studentName'] = studentName.trim();
     appointment['studentSurname'] = studentSurname.trim();
+    appointment['studentMail'] = email;
     appointment['studentUID'] =  _firebaseAuth.currentUser!.uid.trim();
     appointment['status'] = 'pending';
     await FirebaseFirestore.instance

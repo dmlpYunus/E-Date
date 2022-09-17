@@ -83,7 +83,7 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
           ElevatedButton(
               onPressed: (){
                 setState(() {
-                  status = 'denied';
+                  status = 'Denied';
                   appointmentsStream = appointmentsStream = appointments
                       .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
                       .where('dateTime', isGreaterThanOrEqualTo: DateTime.now())
@@ -117,7 +117,7 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
           ElevatedButton(
               onPressed: (){
                 setState(() {
-                  status = 'accepted';
+                  status = 'Approved';
                   appointmentsStream = appointmentsStream = appointments
                       .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
                       .where('dateTime', isGreaterThanOrEqualTo: DateTime.now())
@@ -169,10 +169,10 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
                               const EdgeInsets.symmetric(horizontal: 15),
                               trailing: (appointments['status'] == 'pending') ?
                               const Text('Pending',style : TextStyle(color: Colors.orangeAccent)) :
-                              (appointments['status'] == 'denied') ?
+                              (appointments['status'] == 'Denied') ?
                               const Text('Denied',style : TextStyle(color: Colors.red)) :
-                              (appointments['status'] == 'accepted') ?
-                              const Text('Denied',style : TextStyle(color: Colors.green)) :
+                              (appointments['status'] == 'Approved') ?
+                              const Text('Approved',style : TextStyle(color: Colors.green)) :
                               const Text('Denied',style : TextStyle(color: Colors.deepPurple)),
                               leading:
                                   Image.asset('images/calendarr.png',scale: 10),

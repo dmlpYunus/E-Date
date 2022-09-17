@@ -52,7 +52,7 @@ class _InstUpcomingAppointmentState extends State<InstUpcomingAppointments> {
             child: StreamBuilder(
                 stream: appointments
                     .where('dateTime', isGreaterThan: DateTime.now())
-                    .where('status', isEqualTo: 'approved')
+                    .where('status', isEqualTo: 'Approved')
                     .orderBy('dateTime', descending: false)
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -76,14 +76,16 @@ class _InstUpcomingAppointmentState extends State<InstUpcomingAppointments> {
                             child: ListTile(
                               contentPadding:
                                   const EdgeInsets.symmetric(horizontal: 15),
-                              trailing: const Icon(Icons.access_alarm_rounded),
+                              trailing: const Icon(Icons.done_outline_rounded,color: Colors.green,),
                               leading:
-                                  const Icon(Icons.insert_invitation_rounded),
+                                   Image.asset('images/calendar.png'),
                               subtitle: Text(timeStampToDateTime(
                                   appointments['dateTime'])),
                               title: Text(
                                   '${appointments['studentName']} ${appointments['studentSurname']} '
-                                  '${appointments['studentId']}'),
+                                  '${appointments['studentId']}',overflow: TextOverflow.visible,style: TextStyle(
+                                fontWeight: FontWeight.w600
+                              )),
                             ),
                           );
                         }).toList(),
