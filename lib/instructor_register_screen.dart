@@ -25,6 +25,7 @@ class _InstructorRegisterState extends State<InstructorRegister>
     height = MediaQuery.of(context).size.height;
     width = MediaQuery.of(context).size.width;
     return Scaffold(
+      extendBody: false,
         body: Stack(
           children: [buildPageTopView(),buildPageSplash(),buildRegisterForm()],
     ));
@@ -79,17 +80,17 @@ class _InstructorRegisterState extends State<InstructorRegister>
                     fontWeight: FontWeight.bold,
                     color: Colors.blueGrey),
               ),
-              const SizedBox(height: 20),
+               SizedBox(height: height * 0.02),
               buildNameText(),
-              const SizedBox(height: 20),
+              SizedBox(height: height * 0.02),
               buildSurnameText(),
-              const SizedBox(height: 20),
+              SizedBox(height: height * 0.02),
               buildEmailText(),
-              const SizedBox(height: 20),
+              SizedBox(height: height * 0.02),
               buildPasswordText(),
-              const SizedBox(height: 20),
+              SizedBox(height: height * 0.02),
               buildSignUpButton(),
-              const SizedBox(height: 20),
+              //const SizedBox(height: 20),
             ],
           ),
         ),
@@ -115,7 +116,10 @@ class _InstructorRegisterState extends State<InstructorRegister>
           }
         }
       },
-      child: const Text("Sign-Up"),
+    style: ButtonStyle(side: MaterialStateBorderSide.resolveWith((states) => const BorderSide(color: Colors.black,style: BorderStyle.solid)),
+    backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+    shadowColor: MaterialStateColor.resolveWith((states) => Colors.transparent)),
+      child: const Text("Submit",style: TextStyle(color: Colors.black)),
     );
   }
 

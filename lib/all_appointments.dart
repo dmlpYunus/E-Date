@@ -109,14 +109,15 @@ class _AllAppointmentsState extends State<AllAppointments>{
         if(status !=''){
           appointmentsStream = appointmentsdb.where('status',isEqualTo: status).orderBy('dateTime',descending: false).snapshots();
         }else{
-          appointmentsStream = appointmentsdb.orderBy('dateTime',descending: false).orderBy('name').startAt([query]).endAt(['$query\uf8ff']).snapshots();
+          appointmentsStream = appointmentsdb.orderBy('dateTime',descending: false).orderBy('studentName').snapshots();
         }
       }else{
         if(status !=''){
           appointmentsStream = appointmentsdb.where('status',isEqualTo: status)
-              .orderBy('dateTime',descending: false).snapshots();
+              .orderBy('dateTime',descending: false).orderBy('studentName').startAt([query]).endAt(['$query\uf8ff']).snapshots();
         }else{
-          appointmentsStream = appointmentsdb.orderBy('dateTime',descending: false).snapshots();
+          appointmentsStream = appointmentsdb.orderBy('dateTime',descending: false)
+              .orderBy('studentName').startAt([query]).endAt(['$query\uf8ff']).snapshots();
         }
       }
     });

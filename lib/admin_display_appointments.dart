@@ -3,15 +3,18 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'utils/date_utils.dart' as date_utils;
 
-class StudentPastAppointments extends StatefulWidget {
-  const StudentPastAppointments({Key? key}) : super(key: key);
+class AdminDisplayAppointment extends StatefulWidget {
+  QueryDocumentSnapshot selected;
+  AdminDisplayAppointment({Key? key,required this.selected}) : super(key: key);
 
   @override
-  State<StudentPastAppointments> createState() =>
-      _StudentPastAppointmentsState();
+  State<AdminDisplayAppointment> createState() =>
+      _AdminDisplayAppointmentState(selected);
 }
 
-class _StudentPastAppointmentsState extends State<StudentPastAppointments> {
+class _AdminDisplayAppointmentState extends State<AdminDisplayAppointment> {
+  QueryDocumentSnapshot selected;
+  _AdminDisplayAppointmentState(this.selected);
   FirebaseFirestore firebaseFirestore = FirebaseFirestore.instance;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   double width = 0.0;
@@ -24,11 +27,20 @@ class _StudentPastAppointmentsState extends State<StudentPastAppointments> {
   @override
   void initState() {
     super.initState();
-    appointmentsStream = appointments
-        .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
-        .where('dateTime', isLessThanOrEqualTo: DateTime.now())
-        .orderBy('dateTime', descending: false)
-        .snapshots();
+    if(selected['role'] == 'student'){
+      appointmentsStream = appointments
+          .where('studentUID',isEqualTo:selected['UID'])
+          .where('dateTime', isLessThanOrEqualTo: DateTime.now())
+          .orderBy('dateTime', descending: false)
+          .snapshots();
+    }else{
+      appointmentsStream = appointments
+          .where('instructorId',isEqualTo:selected['UID'])
+          .where('dateTime', isLessThanOrEqualTo: DateTime.now())
+          .orderBy('dateTime', descending: false)
+          .snapshots();
+    }
+
   }
 
   @override
@@ -47,7 +59,7 @@ class _StudentPastAppointmentsState extends State<StudentPastAppointments> {
           icon: const Icon(Icons.arrow_back_ios_new_outlined),
         ),
         centerTitle: true,
-        title: const Text('Past Appointments',textAlign: TextAlign.center,style: TextStyle(color: Colors.black)),
+        title:  Text('${selected['name']}\'s  Appointments',textAlign: TextAlign.center,style: TextStyle(color: Colors.black)),
       ),
       body: Stack(
         children: [buildStatusButtons(), buildUpcomingAppointmentsList()],
@@ -83,7 +95,7 @@ class _StudentPastAppointmentsState extends State<StudentPastAppointments> {
           ElevatedButton(
               onPressed: (){
                 setState(() {
-                  status = 'Denied';
+                  status = 'denied';
                   appointmentsStream = appointmentsStream = appointments
                       .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
                       .where('dateTime', isLessThanOrEqualTo: DateTime.now())
@@ -117,7 +129,7 @@ class _StudentPastAppointmentsState extends State<StudentPastAppointments> {
           ElevatedButton(
               onPressed: (){
                 setState(() {
-                  status = 'Approved';
+                  status = 'accepted';
                   appointmentsStream = appointmentsStream = appointments
                       .where('studentUID',isEqualTo:_firebaseAuth.currentUser!.uid)
                       .where('dateTime', isLessThanOrEqualTo: DateTime.now())
@@ -167,17 +179,15 @@ class _StudentPastAppointmentsState extends State<StudentPastAppointments> {
                             child: ListTile(
                               contentPadding:
                               const EdgeInsets.symmetric(horizontal: 15),
-                              trailing: (appointments['dateTime'].toDate().isBefore(DateTime.now()) && ['pending'].contains(appointments['status'])) ?
-                              const Text('TimeOut',style : TextStyle(color: Colors.redAccent)) :
-                              (appointments['status'] == 'pending') ?
+                              trailing: (appointments['status'] == 'pending') ?
                               const Text('Pending',style : TextStyle(color: Colors.orangeAccent)) :
-                              (appointments['status'] == 'Denied') ?
+                              (appointments['status'] == 'denied') ?
                               const Text('Denied',style : TextStyle(color: Colors.red)) :
-                              (appointments['status'] == 'Approved') ?
-                              const Text('Approved',style : TextStyle(color: Colors.green)) :
+                              (appointments['status'] == 'accepted') ?
+                              const Text('Denied',style : TextStyle(color: Colors.green)) :
                               const Text('Denied',style : TextStyle(color: Colors.deepPurple)),
                               leading:
-                               Image.asset('images/calendarr.png'),
+                              Image.asset('images/calendarr.png'),
                               subtitle: Text(timeStampToDateTime(
                                   appointments['dateTime'])),
                               title: Text(

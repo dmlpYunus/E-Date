@@ -4,6 +4,8 @@ import 'package:flutter/rendering.dart';
 import 'package:flutterfirebasedeneme/search_widget.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
 
+import 'admin_display_appointments.dart';
+
 
 class AllInstructors extends StatefulWidget {
   const AllInstructors({Key? key}) : super(key: key);
@@ -16,7 +18,7 @@ class _AllInstructorsState extends State<AllInstructors>{
   final textController = TextEditingController();
   AuthService _authService = AuthService();
   CollectionReference instructorsdb =
-  FirebaseFirestore.instance.collection("instructors");
+  FirebaseFirestore.instance.collection("users");
   late Stream<QuerySnapshot<Object?>> instructorsStream;
   double width = 0;
   double height =0;
@@ -25,7 +27,7 @@ class _AllInstructorsState extends State<AllInstructors>{
   @override
   void initState() {
     super.initState();
-    instructorsStream = instructorsdb.orderBy("name").snapshots();
+    instructorsStream = instructorsdb.where('role',isEqualTo: 'instructor').orderBy("name").snapshots();
   }
 
   buildSearchBar(){
@@ -44,9 +46,9 @@ class _AllInstructorsState extends State<AllInstructors>{
   void searchInstructor(String query) async{
     setState(()  {
       if(query == ''){
-        instructorsStream = instructorsdb.orderBy("search").snapshots();
+        instructorsStream = instructorsdb.where('role',isEqualTo: 'instructor').orderBy("search").snapshots();
       }else{
-        instructorsStream = instructorsdb.orderBy("search").startAt([query]).endAt(['$query\uf8ff']).snapshots();
+        instructorsStream = instructorsdb.where('role',isEqualTo: 'instructor').orderBy("search").startAt([query]).endAt(['$query\uf8ff']).snapshots();
         //instructorsStream = instructorsdb.orderBy("search").where('search',isGreaterThanOrEqualTo: query/*\uf8ff'*/).snapshots();
       }
     });
@@ -69,6 +71,7 @@ class _AllInstructorsState extends State<AllInstructors>{
                 return Center(
                   child: ListTile(
                     onTap: (){
+                      Navigator.push(context, MaterialPageRoute(builder: (context) => AdminDisplayAppointment(selected: instructors)));
                     },
                     contentPadding: const EdgeInsets.symmetric(horizontal: 15),
                     trailing: const Text('Instructor'),

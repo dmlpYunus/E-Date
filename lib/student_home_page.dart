@@ -323,7 +323,7 @@ class _HomePageState extends State<HomePage> {
   void httpOnTap() async {
 
     var client = await createClient();
-    print(await client.credentials.accessToken);
+    //print(await client.credentials.accessToken);
     print(await client.read(Uri.parse('https://api.zoom.us/v2/users/me/meetings')));
 
     //await client.post(Uri.parse('https://zoom.us/oauth/token'));
@@ -363,10 +363,10 @@ class _HomePageState extends State<HomePage> {
     await launchUrl(authorizationUrl,mode: LaunchMode.externalNonBrowserApplication);
 
 
-    var responseUrl = /*await uriLinkStream.firstWhere((element) =>
+    var responseUrl = await uriLinkStream.firstWhere((element) =>
         element.toString().
-        startsWith(redirectUrl.toString()));*/
-    await listen(redirectUrl);
+        startsWith(redirectUrl.toString()));
+    //await listen(redirectUrl);
 
 
     if(responseUrl == null){
@@ -395,10 +395,6 @@ class _HomePageState extends State<HomePage> {
   getToken() async {
 
   }
-
-
-
-
 
 
   createJson() {
