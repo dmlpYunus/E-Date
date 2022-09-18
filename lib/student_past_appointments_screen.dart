@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'utils/date_utils.dart' as date_utils;
 
 class StudentPastAppointments extends StatefulWidget {
@@ -193,6 +194,210 @@ class _StudentPastAppointmentsState extends State<StudentPastAppointments> {
         ],
       ),
     );
+  }
+
+  displayAppointmentInfo(QueryDocumentSnapshot appointment){
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return Dialog(
+            backgroundColor: Colors.white,
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(20)),
+            child: Container(
+              height: height*0.6,
+              width: 450,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: (appointment['status'] == 'Approved') ? [
+                  const SizedBox(height: 20),
+                  const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text(
+                    "Appointment ID : ${appointment.id}",
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Appointment Date : ${date_utils.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}   Hour : ${appointment['dateTime'].toDate().hour}:00',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Instructor ID : ${appointment['instructorId']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Student ID : ${appointment['studentId']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Zoom Link : ${appointment['zoomLink']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Student UID : ${appointment['studentUID']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  SizedBox(
+                    width: 320,
+                    child:
+                    Align(
+                      alignment: Alignment.center,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children : (appointment['status'] == 'pending') ?[
+                            ElevatedButton(
+                              onPressed: () { // DELETE
+                                setState(() {
+                                  //appointmentsdb.doc(appointment.id).update({'status' : 'cancelled'});
+                                  Navigator.pop(context);
+                                });
+                              },
+                              style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                                  shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent)),
+                              child: const Text("Delete",style: TextStyle(color: Colors.red)),
+                            ),
+                            ElevatedButton(  //OK
+                              onPressed: () => Navigator.pop(context),
+                              style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                                  shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                              child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                            )] :
+                          [
+                            ElevatedButton( // Launch
+                              onPressed: () => launchUrl(Uri.parse(appointment['zoomLink']),mode: LaunchMode.externalNonBrowserApplication),
+                              style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                                  shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                              child: const Text("Launch Meeting ",style: TextStyle(color: Colors.green)),
+                            ),
+                            ElevatedButton( // OK
+                              onPressed: () => Navigator.pop(context),
+                              style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                                  shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                              child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                            )
+                          ]
+                      ),
+                    ),
+                  )
+                ] : [
+                  const SizedBox(height: 20),
+                  const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text(
+                    "Appointment ID : ${appointment.id}",
+                    style: const TextStyle(
+                        color: Colors.black,
+                        fontSize: 16,fontWeight: FontWeight.bold),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Appointment Date : ${date_utils.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}   Hour : ${appointment['dateTime'].toDate().hour}:00',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Instructor ID : ${appointment['instructorId']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Student ID : ${appointment['studentId']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  Text('Student UID : ${appointment['studentUID']}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  SizedBox(
+                    height: height * 0.02,
+                  ),
+                  SizedBox(
+                    width: 320,
+                    child:
+                    Align(
+                      alignment: Alignment.center,
+                      child: Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children : (appointment['status'] == 'pending') ?[
+                            ElevatedButton(
+                              onPressed: () { // DELETE
+                                setState(() async {
+                                  /*await appointmentsdb.doc(appointment.id).delete().then((value) {
+                                    Navigator.pop(context);
+                                  });*/
+                                });
+                              },
+                              style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                                  shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent)),
+                              child: const Text("Cancel Appointment",style: TextStyle(color: Colors.red)),
+                            ),
+                            ElevatedButton(  //OK
+                              onPressed: () => Navigator.pop(context),
+                              style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                                  shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                              child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                            )] :
+                          [
+                            ElevatedButton( // OK
+                              onPressed: () => Navigator.pop(context),
+                              style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                                  shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                              child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                            )]
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            ),
+          );
+        });
   }
 
   timeStampToDateTime(Timestamp timeStamp) {
