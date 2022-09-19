@@ -460,6 +460,7 @@ class _ReservationPageState extends State<ReservationPage> {
     appointment['instructorName'] = instructor.name.trim();
     appointment['instructorSurname'] = instructor.surname.trim();
     appointment['instructorId'] = instructor.id;
+    appointment['instructorMail'] = instructor.mail;
     appointment['studentId'] = studentId.trim();
     appointment['studentName'] = studentName.trim();
     appointment['studentSurname'] = studentSurname.trim();

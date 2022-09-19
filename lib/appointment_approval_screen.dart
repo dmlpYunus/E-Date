@@ -50,11 +50,10 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
 
   @override
   void initState()  {
-    //currentUser =  authService.getCurrentUser();
     currentUserMap();
     app = appointments
         .where('dateTime', isGreaterThanOrEqualTo: DateTime.now())
-    //.where('status',isEqualTo: 'pending')
+        .where('status',isEqualTo: 'pending')
         .orderBy('dateTime', descending: false)
         .snapshots();
   }
@@ -69,8 +68,8 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
         crossAxisAlignment: CrossAxisAlignment.center,
         mainAxisAlignment: MainAxisAlignment.center,
         children: const [
-          Text('WELCOME',style: TextStyle(fontWeight: FontWeight.bold,color: Colors.green)),
-          Text('Please Swipe to Approve or Deny'),
+          Text('WELCOME',style: TextStyle(fontWeight: FontWeight.bold,color: Colors.blueAccent,fontSize: 24)),
+          Text('Please Swipe to Approve or Deny',style: TextStyle(fontSize: 18)),
         ],
       ),
     );
@@ -94,7 +93,9 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
                     .orderBy('dateTime', descending: false)
                     .snapshots(),
                 builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
-                  if (!snapshot.hasData) {
+                  if(snapshot.connectionState == ConnectionState.waiting){
+                    return Center(child: CircularProgressIndicator());
+                  }else if (!snapshot.hasData) {
                     return const Center(
                       child: Text("No Appointment Requests Available"),
                     );
@@ -112,16 +113,17 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
                           endActionPane: slideForDeny(appointments),
                           closeOnScroll: true,
                           child: ListTile(
+                            onTap: () => displayAppointmentInfo(appointments),
                             contentPadding:
                                 const EdgeInsets.symmetric(horizontal: 15),
-                            trailing: const Icon(Icons.access_alarm_rounded),
+                            trailing: Text('${appointments['dateTime'].toDate().hour}:00',style: TextStyle(color: Colors.deepOrange,fontSize: 20)),
                             leading:
-                                const Icon(Icons.insert_invitation_rounded),
+                                Image.asset('images/calendarr.png'),
                             subtitle: Text(
                                 timeStampToDateTime(appointments['dateTime'])),
                             title: Text(
-                                '${appointments['studentName']} ${appointments['studentSurname']} '
-                                '${appointments['studentId']}'),
+                                '${appointments['studentName']} ${appointments['studentSurname']} \n'
+                                '${appointments['studentId']}',style: TextStyle(fontWeight: FontWeight.w600,overflow: TextOverflow.ellipsis)),
                           ),
                         ),
                       );
@@ -133,8 +135,95 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
       ),
     );
   }
+  
+  pendingDialog(QueryDocumentSnapshot appointment){
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        height: height*0.44,
+        width: 450,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: height * 0.04),
+            const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text(
+              "Appointment ID : ${appointment.id}",
+              style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Appointment Date : ${date_utils.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}',
+              style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Time Slot : ${appointment['dateTime'].toDate().hour}:00',
+              style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+              style: const TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Student ID : ${appointment['studentId']}',
+              style: const TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+              style: const TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            SizedBox(
+              child:
+              Align(
+                alignment: Alignment.center,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children : [
+                      ElevatedButton(  //OK
+                        onPressed: () => Navigator.pop(context),
+                        style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                            shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                        child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                      )]
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
 
-
+  displayAppointmentInfo(QueryDocumentSnapshot appointment){
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return pendingDialog(appointment);
+        });
+  }
 
   slideForApprove(QueryDocumentSnapshot appointment) {
     return ActionPane(
@@ -159,14 +248,17 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
   approveAppointment(QueryDocumentSnapshot appointment) async {
     var client = await createClient();
     var response = await client.post(Uri.parse('https://api.zoom.us/v2/users/me/meetings'),headers: createMeetingPostHeader(),body: createMeetingPostBody(appointment));
-    print(response.body);
     var zoomLink = await jsonDecode(await response.body)['join_url'];
-    await appointments.doc(appointment.id).update({'status': 'Approved','zoomLink' : zoomLink});
-    await _firestore.collection('users').doc(appointment['studentUID']).get().then((student) {
-          displaySnackBar('Appointment Approved');
-          sendNotification(student.get('fcmToken'),'${currentUser['name']} ${currentUser['surname']}');
-        }
-    );
+    if(await zoomLink != null ||zoomLink != ''){
+      await appointments.doc(appointment.id).update({'status': 'Approved','zoomLink' : zoomLink});
+      await _firestore.collection('users').doc(appointment['studentUID']).get().then((student) {
+        displaySnackBar('Appointment Approved');
+        sendNotification(student.get('fcmToken'),'${currentUser['name']} ${currentUser['surname']}');
+      }
+      );
+    }else{
+      displaySnackBar('Something Went Wrong');
+    }
   }
 
   getSelectedUser(String uID) async {
@@ -232,8 +324,7 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
           );
         });
   }
-
-
+  
   slideForDeny(QueryDocumentSnapshot appointment) {
     return ActionPane(
       motion: const ScrollMotion(),
@@ -346,8 +437,7 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
       throw Exception('Unable to launch authorization URL');
     }
   }
-
-
+  
   Future<Uri?> listen(Uri redirectUrl) async {
     return await uriLinkStream.firstWhere((element) =>
         element.toString().

@@ -8,6 +8,7 @@ import 'package:flutterfirebasedeneme/instructor_account_settings_screen.dart';
 import 'package:flutterfirebasedeneme/instructor_past_appointments_screen.dart';
 import 'package:flutterfirebasedeneme/instructor_upcoming_appointments_screen.dart';
 import 'package:flutterfirebasedeneme/utils/colors_util.dart';
+import 'package:url_launcher/url_launcher.dart';
 import 'utils/date_utils.dart' as date_util;
 
 class InstructorHomepage extends StatefulWidget {
@@ -241,80 +242,184 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     showDialog(
         context: context,
         builder: (BuildContext context) {
-          return Dialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)),
-            child: Container(
-              height: height*0.35,
-              width: 450,
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: <Widget>[
-                  const SizedBox(height: 20),
-                  const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text(
-                    "Appointment ID : ${appointment.id}",
-                    overflow: TextOverflow.fade,
-                    style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}   Hour : ${appointment['dateTime'].toDate().hour}:00',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text('Student ID : ${appointment['studentId']}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                  SizedBox(
-                    width: 320,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.end,
-                        children : [
-                          OutlinedButton(
-                            onPressed: (){
-                              Navigator.pop(context);
-                            },
-                            style: OutlinedButton.styleFrom(
-                                side: const BorderSide(width: 3,color: Colors.transparent),
-                                shadowColor: Colors.transparent,
-                                backgroundColor: Colors.transparent
-                            ),
-                            child: Text('Ok',style: TextStyle(color: HexColor('0416B5'))),
-
-                          ),]
-                    ),
-                  )
-                ],
-              ),
-            ),
-          );
+         return approvedDialog(appointment);
         });
+  }
+
+  approvedDialog(QueryDocumentSnapshot appointment){
+    Map<String,dynamic> appointmentMap = appointment.data() as Map<String,dynamic>;
+    if(appointmentMap.containsKey('zoomLink')){
+      return  Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          height: height*0.53,
+          width: 450,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children:  [
+              SizedBox(height: height * 0.03),
+              const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text(
+                "Appointment ID : ${appointment.id}",
+                style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}',
+                style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Time Slot : ${appointment['dateTime'].toDate().hour}:00',
+                style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Student ID : ${appointment['studentId']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Student Mail : ${appointment['studentMail']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Zoom Link : ${appointment['zoomLink']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                width: 320,
+                child:
+                Align(
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children : [
+                      ElevatedButton(  //OK
+                        onPressed: () => launchUrl(Uri.parse(appointment['zoomLink']),mode: LaunchMode.externalNonBrowserApplication),
+                        style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                            shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                        child: const Text("Launch Meeting",style: TextStyle(color: Colors.green)),
+                      ),
+                      ElevatedButton(  //OK
+                        onPressed: () => Navigator.pop(context),
+                        style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                            shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                        child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                      )],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }else{
+      return  Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          height: height*0.44,
+          width: 450,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children:  [
+              SizedBox(height: height * 0.03),
+              const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text(
+                "Appointment ID : ${appointment.id}",
+                style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}',
+                style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Time Slot : ${appointment['dateTime'].toDate().hour}:00',
+                style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Student ID : ${appointment['studentId']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),Text('Student Mail : ${appointment['studentMail']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                width: 320,
+                child:
+                Align(
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children : [
+                      ElevatedButton(  //OK
+                        onPressed: () => Navigator.pop(context),
+                        style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                            shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent)),
+                        child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                      )],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
   }
 
   buildDrawer() {
@@ -430,28 +535,9 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
     return hours;
   }
 
-  /*getAppointmentTable() async {
-    await _firestore
-        .collection('appointments')
-        .where('dateTimeDay', isEqualTo: today)
-        //.where('instructorId', isEqualTo:_firebaseAuth.currentUser!.uid)
-        .get()
-        .then((snapshot) {
-      instructorAppointmentsList.clear();
-      if (snapshot.size == 0) {
-        return;
-      }
-      for (int i = 0; i < snapshot.size; i++) {
-        instructorAppointmentsList.add(snapshot.docs[i].data());
-        print(snapshot.docs[i].get('dateTime'));
-        todaysAppointmentHours.add(snapshot.docs[i].get('dateTime').toDate());
-      }
-    });
-  }*/
 
   void updateFcmToken() async {
     await FirebaseMessaging.instance.getToken().then((value) {
-      //var a = {'fcmToken': value};
       FirebaseFirestore.instance
           .collection("users")
           .doc(FirebaseAuth.instance.currentUser?.uid)

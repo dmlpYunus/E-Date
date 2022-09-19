@@ -52,7 +52,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
           ElevatedButton(
             onPressed: (){
               setState(() {
-                status = 'denied';
+                status = 'Denied';
                 appointmentsStream = appointmentsdb.where('status',isEqualTo: status).orderBy('dateTime',descending: false).snapshots();
               });
             },
@@ -76,7 +76,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
           ElevatedButton(
               onPressed: (){
                 setState(() {
-                  status = 'accepted';
+                  status = 'Approved';
                   appointmentsStream = appointmentsdb.where('status',isEqualTo: status).orderBy('dateTime',descending: false).snapshots();
                 });
               },
@@ -123,15 +123,15 @@ class _AllAppointmentsState extends State<AllAppointments>{
     });
   }
 
-  buildInstructorsList() {
+  buildAppointmentsList() {
     return Container(
-      height: height*0.5,
-      margin: EdgeInsets.only(top : height*0.25),
+      height: height*0.7,
+      margin: EdgeInsets.only(top : height*0.30),
       child: StreamBuilder(
           stream: appointmentsStream,
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
             if(snapshot.connectionState == ConnectionState.waiting) {
-              //return const Center(child: CircularProgressIndicator());
+              return const Center(child: CircularProgressIndicator());
             }
             if (!snapshot.hasData) {
               return const Center(
@@ -142,16 +142,14 @@ class _AllAppointmentsState extends State<AllAppointments>{
               children: snapshot.data!.docs.map((appointments) {
                 return Center(
                   child: ListTile(
-                    onTap: (){
-                      appointmentOnTap(appointments);
-                    },
+                    onTap: () => displayAppointmentInfo(appointments),
                     contentPadding: const EdgeInsets.symmetric(horizontal: 15),
                     leading: Image.asset('images/calendar.png'),
                     trailing: (appointments['status'] == 'pending') ?
                     const Icon(Icons.access_time,color: Colors.orangeAccent) :
-                    (appointments['status'] == 'denied') ?
+                    (appointments['status'] == 'Denied') ?
                     const Icon(Icons.cancel_rounded,color: Colors.red,) :
-                    (appointments['status'] == 'accepted') ?
+                    (appointments['status'] == 'Approved') ?
                     const Icon(Icons.done_outlined,color: Colors.green) :
                     const Icon(Icons.delete,color: Colors.deepPurple,),
                     subtitle: Text(date_util.DateUtils.apiDayFormat(appointments['dateTime'].toDate())),
@@ -164,6 +162,347 @@ class _AllAppointmentsState extends State<AllAppointments>{
     );
   }
 
+  displayAppointmentInfo(QueryDocumentSnapshot appointment){
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          if(appointment['status'] == 'Approved'){
+            return approvedDialog(appointment);
+          }else if(appointment['status'] == 'Denied'){
+            return cancelledDialog(appointment);
+          }else {
+            return pendingDialog(appointment);
+          }
+        });
+  }
+
+  approvedDialog(QueryDocumentSnapshot appointment){
+    Map<String,dynamic> appointmentMap = appointment.data() as Map<String,dynamic>;
+    if(appointmentMap.containsKey('zoomLink')){
+      return  Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          height: height*0.47,
+          width: 450,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children:  [
+              SizedBox(height: height * 0.03),
+              const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text(
+                "Appointment ID : ${appointment.id}",
+                style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}',
+                style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Time Slot : ${appointment['dateTime'].toDate().hour}:00',
+                style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Student ID : ${appointment['studentId']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Zoom Link : ${appointment['zoomLink']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                width: 320,
+                child:
+                Align(
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children : [
+                      ElevatedButton(  //OK
+                        onPressed: () => Navigator.pop(context),
+                        style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                            shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                        child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                      )],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }else{
+      return  Dialog(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20)),
+        child: Container(
+          height: height*0.42,
+          width: 450,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children:  [
+              SizedBox(height: height * 0.03),
+              const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text(
+                "Appointment ID : ${appointment.id}",
+                style: const TextStyle(
+                    color: Colors.black,
+                    fontSize: 16,fontWeight: FontWeight.bold),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}',
+                style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Time Slot : ${appointment['dateTime'].toDate().hour}:00',
+                style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Student ID : ${appointment['studentId']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+                style: const TextStyle(color: Colors.black),
+              ),
+              SizedBox(
+                height: height * 0.02,
+              ),
+              SizedBox(
+                width: 320,
+                child:
+                Align(
+                  alignment: Alignment.center,
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children : [
+                      ElevatedButton(  //OK
+                        onPressed: () => Navigator.pop(context),
+                        style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                            shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                        child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                      )],
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+  }
+  
+  cancelledDialog(QueryDocumentSnapshot appointment){
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        height: height*0.5,
+        width: 450,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: height * 0.04),
+            const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text(
+              "Appointment ID : ${appointment.id}",
+              style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}',
+              style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+            ),
+            Text('Time Slot : ${appointment['dateTime'].toDate().hour}:00',
+              style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+              style: const TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Student ID : ${appointment['studentId']}',
+              style: const TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+              style: const TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Denial Reason : ${appointment['reason']}',
+              style: const TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            SizedBox(
+              child:
+              Align(
+                alignment: Alignment.center,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children : [
+                      ElevatedButton(  //OK
+                        onPressed: () => Navigator.pop(context),
+                        style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                            shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                        child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                      )]
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
+  pendingDialog(QueryDocumentSnapshot appointment){
+    return Dialog(
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20)),
+      child: Container(
+        height: height*0.44,
+        width: 450,
+        padding: const EdgeInsets.symmetric(horizontal: 12),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(height: height * 0.04),
+            const Text('Appointment Details',style: TextStyle(fontSize: 24,fontWeight: FontWeight.bold)),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text(
+              "Appointment ID : ${appointment.id}",
+              style: const TextStyle(
+                  color: Colors.black,
+                  fontSize: 16,fontWeight: FontWeight.bold),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}',
+              style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Time Slot : ${appointment['dateTime'].toDate().hour}:00',
+              style: const TextStyle(color: Colors.black,fontWeight: FontWeight.w600),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
+              style: const TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Student ID : ${appointment['studentId']}',
+              style: const TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
+              style: const TextStyle(color: Colors.black),
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            SizedBox(
+              height: height * 0.02,
+            ),
+            SizedBox(
+              child:
+              Align(
+                alignment: Alignment.center,
+                child: Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children : [
+                      ElevatedButton(  //OK
+                        onPressed: () => Navigator.pop(context),
+                        style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
+                            shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
+                        child: const Text("Ok",style: TextStyle(color: Colors.blue)),
+                      )]
+                ),
+              ),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+
   appointmentOnTap(QueryDocumentSnapshot appointment){
     showDialog(
         context: context,
@@ -173,7 +512,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20)),
             child: Container(
-              height: height*0.42,
+              height: height*0.47,
               width: 450,
               padding: const EdgeInsets.symmetric(horizontal: 12),
               child: Column(
@@ -193,7 +532,13 @@ class _AllAppointmentsState extends State<AllAppointments>{
                   const SizedBox(
                     height: 10,
                   ),
-                  Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}   Hour : ${appointment['dateTime'].toDate().hour}:00',
+                  Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}',
+                    style: const TextStyle(color: Colors.black),
+                  ),
+                  const SizedBox(
+                    height: 10,
+                  ),
+                  Text('Time Slot : ${appointment['dateTime'].toDate().hour}:00',
                     style: const TextStyle(color: Colors.black),
                   ),
                   const SizedBox(
@@ -232,7 +577,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
                     child: Row(
                         mainAxisAlignment: MainAxisAlignment.end,
                         children : [
-                          ElevatedButton(
+                          ElevatedButton( // DELETE
                             onPressed: () {
                               setState(() {
                                 appointmentsdb.doc(appointment.id).update({'status' : 'cancelled'});
@@ -243,10 +588,10 @@ class _AllAppointmentsState extends State<AllAppointments>{
                                 shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent)),
                             child: const Text("Delete",style: TextStyle(color: Colors.red)),
                           ),
-                          ElevatedButton(
+                          ElevatedButton( //EDİT
                             onPressed: () {
                               setState(() {
-
+                                ///TODO : Implement here
                               });
                             },
                             style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
@@ -270,91 +615,6 @@ class _AllAppointmentsState extends State<AllAppointments>{
 
 
 
-  /*appointmentOnTap(QueryDocumentSnapshot appointment){
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return Dialog(
-            backgroundColor: Colors.white,
-            shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(20)),
-            child: Container(
-              height: height*0.5,
-              width: 320,
-              padding: const EdgeInsets.only(right: 12,left: 12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: <Widget>[
-                  const Text('Appointment Details',style: TextStyle(fontSize: 24)),
-                  const SizedBox(
-                    height: 10,
-                  ),
-                   Text(
-                    "Appointment ID : ${appointment.id}",
-                    style: const TextStyle(
-                        color: Colors.black,
-                        fontSize: 16,
-                        fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(
-                    height: 30,
-                  ),
-                   Text('Appointment Date : ${date_util.DateUtils.apiDayFormat(appointment['dateTime'].toDate())}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  const SizedBox(
-                    height: 20,
-                  ),
-                  Text('Instructor ID : ${appointment['instructorId']}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  Text('Instructor : ${appointment['instructorName']} ${appointment['instructorSurname']}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  Text('Student ID : ${appointment['studentId']}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
-                    style: const TextStyle(color: Colors.black),
-                  ),Text('Student UID : ${appointment['studentUID']}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  SizedBox(
-                    width: 320,
-                    child: Row(
-                      children : [
-                        ElevatedButton(
-                        onPressed: () {
-                          setState(() {
-                            appointmentsdb.doc(appointment.id).update({'status' : 'cancelled'});
-                            Navigator.pop(context);
-                          });
-                        },
-                          style: ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.transparent),
-                              shadowColor :MaterialStateColor.resolveWith((states) => Colors.transparent) ),
-                        child: const Text("Cancel",style: TextStyle(color: Colors.red)),
-
-                      ),
-                        OutlinedButton(
-                          onPressed: (){},
-                          style: OutlinedButton.styleFrom(
-                            side: BorderSide(width: 3,color: Colors.transparent),
-                            shadowColor: Colors.transparent,
-                            backgroundColor: Colors.transparent
-                          ),
-                          child: const Text("Ok"),
-
-                        ),]
-                    ),
-                  )
-                ],
-              ),
-            ),
-          );
-        });
-  }*/
-
-
   @override
   Widget build(BuildContext context){
     height  = MediaQuery.of(context).size.height;
@@ -365,7 +625,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
           buildPageTopView(),
           buildStatusButtons(),
           buildSearchBar(),
-          buildInstructorsList(),
+          buildAppointmentsList(),
         ],
       ) ,
     );

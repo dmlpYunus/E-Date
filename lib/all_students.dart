@@ -73,7 +73,7 @@ class _AllStudentsState extends State<AllStudents>{
 
   buildInstructorsList(){
     return Container(
-      height: height*0.5,
+      height: height*0.8,
       margin: EdgeInsets.only(top : height*0.2),
       child: StreamBuilder(
           stream:studentsStream,

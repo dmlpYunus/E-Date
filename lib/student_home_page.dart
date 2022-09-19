@@ -45,17 +45,6 @@ class _HomePageState extends State<HomePage> {
   String? queryCode = '';
   late oauth2.Client client;
 
-
-  static const clientId = '1fXKJBccSXadrGQqcjFHtA';  //Client ID
-  static const clientSecret = 'uPqRlI90JixAnbmO8CR8JRmroqBlFnqa';   //Client Secret
-  static const scopes = [];
-  final authorizationEndpoint =
-  Uri.parse('https://zoom.us/oauth/authorize');
-  final  tokenEndpoint =
-  Uri.parse('https://zoom.us/oauth/token');
-  final redirectUrl =
-  Uri.parse('https://www.google.com/');
-
   @override
   void initState() {
     super.initState();
@@ -90,7 +79,6 @@ class _HomePageState extends State<HomePage> {
       drawer: buildDrawer(),
       body: Stack(
         children: [
-          //buildHomepageTopView(),
           buildSearchBar(),
           buildInstructorsList(),
           buildAdminPageButton(),
@@ -99,36 +87,6 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  buildHomepageTopView() {
-    return Container(
-      width: width,
-      height: height * 0.2,
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children:  [
-          IconButton(
-              icon: const Icon(Icons.person),
-            onPressed: (){
-                setState(() {
-                  buildDrawer();
-                  showDialog(context: context, builder: (context) {
-                    return Dialog(
-                      child: Text('clicked'),
-                    );
-                  },);
-                });
-          },
-          ),
-          const Text('Homepage',
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-              )),
-        ],
-      ),
-    );
-  }
 
   buildDrawer() {
     return Drawer(
@@ -412,15 +370,10 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-
   Future<Uri?> listen(Uri redirectUrl) async {
     return await uriLinkStream.firstWhere((element) =>
         element.toString().
         startsWith(redirectUrl.toString()));
-  }
-
-  getToken() async {
-
   }
 
 
@@ -452,35 +405,6 @@ class _HomePageState extends State<HomePage> {
         }
       }
     );
-
-    var json =
-    {"topic": "Appointment",
-      "type": 2,
-      "start_time": "2019-06-14T10: 21: 57",
-      "duration": "60",
-      "timezone": "Europe/Istanbul",
-      "agenda": "Isık University Instructor Appointment",
-      "schedule_for": "yunus.dmlp@gmail.com",
-
-      "recurrence": {"type": 1,
-        "repeat_interval": 1
-      },
-      "settings": {"host_video": "true",
-        "participant_video": "true",
-        "join_before_host": "true",
-        "mute_upon_entry": "False",
-        "watermark": "true",
-        "audio": "voip",
-        "auto_recording": "cloud",
-        "meeting_invitees": [
-          {
-            "email": "yunus.dmlp@gmail.com"
-          }
-        ]
-      }
-    }.toString();
-    var deneme = jsonEncode(json);
-    return deneme;
   }
 
 
