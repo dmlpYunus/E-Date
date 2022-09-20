@@ -92,9 +92,28 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
     height  = MediaQuery.of(context).size.height;
     width  = MediaQuery.of(context).size.width;
     return Scaffold(
+      appBar:(!instructorSelected) ? AppBar(
+        backgroundColor:Colors.transparent,
+        shadowColor: Colors.transparent,
+        centerTitle: true,
+        actions: (studentSelected) ? [IconButton(
+          onPressed: () => setState(() {
+          studentSelected = false;
+          selectedStream = studentsStream;
+          title = 'Select Student';
+          query = '';
+        }),
+        icon: const Icon(Icons.cancel_rounded,color: Colors.black,))] : [],
+        title: Text(title,style: TextStyle(color: Colors.black)),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.arrow_back_ios_new,color: Colors.black),
+        ),
+
+      ) : null ,
       body:Stack(
         children: (!instructorSelected) ? [
-          buildPageTopView(),
+          //buildPageTopView(),
           buildUserList(),
           buildSearchBar(),
         ] : [
@@ -352,7 +371,6 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
     return Container(
         width: width,
         height: height * 0.1,
-        margin: EdgeInsets.only(top : height * 0.12),
         child: SearchWidget(
           text: query,
           hintText: (studentSelected) ? 'Instructor Name' : 'Student Name',
@@ -382,8 +400,8 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
 
   buildUserList(){
     return Container(
-      height: height*0.5,
-      margin: EdgeInsets.only(top : height*0.2),
+      height: height*0.8,
+      margin: EdgeInsets.only(top: height * 0.1),
       child: StreamBuilder(
           stream:selectedStream,
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -597,14 +615,14 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
       height: height * 0.2,
       child: Row(
         children: [
-          SizedBox(width: 25),
+          SizedBox(width: width*0.04),
           GestureDetector(
             child: const Icon(Icons.arrow_back_ios_new_outlined,size: 30),
             onTap: (){
               Navigator.pop(context);
             },
           ),
-          SizedBox(width: width*0.20),
+          SizedBox(width: width*0.38),
            Text(title,
               textAlign: TextAlign.center,
               style: const TextStyle(

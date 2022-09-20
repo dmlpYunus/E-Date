@@ -36,11 +36,12 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
     height = MediaQuery.of(context).size.height;
     return Scaffold(
       appBar: AppBar(
+        centerTitle: true,
         shadowColor: Colors.transparent,
         foregroundColor: Colors.black,
         backgroundColor: Colors.transparent,
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded),onPressed: () =>Navigator.pop(context)),
-        title: const Text('Pending Appointment Requests'),
+        title: const Text('Pending Appointment Requests',style: TextStyle(fontSize: 24,fontWeight: FontWeight.w600)),
       ),
       body: Stack(
         children: [buildPendingAppointmentsList(),buildApprovalInfo()],
@@ -142,7 +143,7 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
       shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20)),
       child: Container(
-        height: height*0.44,
+        height: height*0.5,
         width: 450,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         child: Column(

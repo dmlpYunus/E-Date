@@ -23,50 +23,25 @@ class _InstructorAccountSettingsState extends State<InstructorAccountSettings> {
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
     return Scaffold(
+        appBar: AppBar(
+          centerTitle: true,
+          shadowColor: Colors.transparent,
+          foregroundColor: Colors.black,
+          backgroundColor: Colors.transparent,
+          leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded),onPressed: () =>Navigator.pop(context)),
+          title: const Text('Account Settings',style: TextStyle(fontSize: 24,fontWeight: FontWeight.w600)),
+        ),
         body: Stack(
-      children: [buildPageBody(), buildPageTopView()],
+      children: [buildPageBody()],
     ));
   }
 
-  buildPageTopView() {
-    return Container(
-      width: width,
-      height: height * 0.1,
-      child: Padding(
-        padding: EdgeInsets.all(8.0),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.end,
-          children: [
-            Padding(
-                padding: EdgeInsets.only(left: 20, right: 20),
-                child: GestureDetector(
-                    onTap: () {
-                      Navigator.pop(context);
-                    },
-                    child: const Icon(
-                      Icons.arrow_back_ios_new_rounded,
-                      size: 30,
-                    ))),
-            Padding(
-              padding: EdgeInsets.only(left: width * 0.15),
-              child: const Text('Account Settings',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 20,
-                    fontWeight: FontWeight.bold,
-                  )),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
 
   buildPageBody() {
     return Container(
       width: width,
       height: height * 0.9,
-      margin: EdgeInsets.only(top: height * 0.15),
+
       child: FutureBuilder(
         future: _firestore
             .collection('users')

@@ -34,7 +34,6 @@ class _AllInstructorsState extends State<AllInstructors>{
     return Container(
         width: width,
         height: height * 0.1,
-        margin: EdgeInsets.only(top : height * 0.12),
         child: SearchWidget(
           text: query,
           hintText: 'Instructor Name',
@@ -57,7 +56,7 @@ class _AllInstructorsState extends State<AllInstructors>{
   buildInstructorsList(){
     return Container(
       height: height*0.8,
-      margin: EdgeInsets.only(top : height*0.2),
+      margin: EdgeInsets.only(top : height*0.1),
       child: StreamBuilder(
           stream:instructorsStream,
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -92,9 +91,19 @@ class _AllInstructorsState extends State<AllInstructors>{
     height  = MediaQuery.of(context).size.height;
     width  = MediaQuery.of(context).size.width;
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor:Colors.transparent,
+        shadowColor: Colors.transparent,
+        centerTitle: true,
+        title: Text('All Instructors',style: TextStyle(color: Colors.black)),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.arrow_back_ios_new,color: Colors.black),
+        ),
+      ),
       body:Stack(
         children: [
-          buildPageTopView(),
+          //buildPageTopView(),
           buildInstructorsList(),
           buildSearchBar(),
         ],

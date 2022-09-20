@@ -33,7 +33,6 @@ class _AllAppointmentsState extends State<AllAppointments>{
     return Container(
       width: width,
       height: height * 0.1,
-      margin: EdgeInsets.only(top : height * 0.12),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
@@ -94,7 +93,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
     return Container(
         width: width,
         height: height * 0.1,
-        margin: EdgeInsets.only(top : height * 0.2),
+        margin: EdgeInsets.only(top : height * 0.08),
         child: SearchWidget(
           text: query,
           hintText: 'Appointment',
@@ -126,7 +125,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
   buildAppointmentsList() {
     return Container(
       height: height*0.7,
-      margin: EdgeInsets.only(top : height*0.30),
+      margin: EdgeInsets.only(top : height*0.2),
       child: StreamBuilder(
           stream: appointmentsStream,
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {
@@ -620,9 +619,18 @@ class _AllAppointmentsState extends State<AllAppointments>{
     height  = MediaQuery.of(context).size.height;
     width  = MediaQuery.of(context).size.width;
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor:Colors.transparent,
+        shadowColor: Colors.transparent,
+        centerTitle: true,
+        title: Text('All Appointments',style: TextStyle(color: Colors.black)),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.arrow_back_ios_new,color: Colors.black),
+        ),
+      ),
       body:Stack(
         children: [
-          buildPageTopView(),
           buildStatusButtons(),
           buildSearchBar(),
           buildAppointmentsList(),

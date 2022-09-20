@@ -37,9 +37,18 @@ class _AllStudentsState extends State<AllStudents>{
     height  = MediaQuery.of(context).size.height;
     width  = MediaQuery.of(context).size.width;
     return Scaffold(
+      appBar: AppBar(
+        backgroundColor:Colors.transparent,
+        shadowColor: Colors.transparent,
+        centerTitle: true,
+        title: Text('All Students',style: TextStyle(color: Colors.black)),
+        leading: IconButton(
+          onPressed: () => Navigator.pop(context),
+          icon: Icon(Icons.arrow_back_ios_new,color: Colors.black),
+        ),
+      ),
       body:Stack(
         children: [
-          buildPageTopView(),
           buildInstructorsList(),
           buildSearchBar(),
         ],
@@ -51,7 +60,6 @@ class _AllStudentsState extends State<AllStudents>{
     return Container(
         width: width,
         height: height * 0.1,
-        margin: EdgeInsets.only(top : height * 0.12),
         child: SearchWidget(
           text: query,
           hintText: 'Student Name',
@@ -74,7 +82,7 @@ class _AllStudentsState extends State<AllStudents>{
   buildInstructorsList(){
     return Container(
       height: height*0.8,
-      margin: EdgeInsets.only(top : height*0.2),
+      margin: EdgeInsets.only(top : height*0.1),
       child: StreamBuilder(
           stream:studentsStream,
           builder: (context, AsyncSnapshot<QuerySnapshot> snapshot) {

@@ -23,8 +23,18 @@ class _StudentAccountSettingsState extends State<StudentAccountSettings> {
     width = MediaQuery.of(context).size.width;
     height = MediaQuery.of(context).size.height;
     return Scaffold(
+        appBar: AppBar(
+          backgroundColor:Colors.transparent,
+          shadowColor: Colors.transparent,
+          centerTitle: true,
+          title: Text('Account Settings',style: TextStyle(color: Colors.black)),
+          leading: IconButton(
+            onPressed: () => Navigator.pop(context),
+            icon: Icon(Icons.arrow_back_ios_new,color: Colors.black),
+          ),
+        ),
         body: Stack(
-          children: [buildPageBody(), buildPageTopView()],
+          children: [buildPageBody()],
         ));
   }
 
@@ -66,7 +76,6 @@ class _StudentAccountSettingsState extends State<StudentAccountSettings> {
     return Container(
       width: width,
       height: height * 0.9,
-      margin: EdgeInsets.only(top: height * 0.1),
       child: FutureBuilder(
         future: _firestore.collection('users').doc(_firebaseAuth.currentUser!.uid).get(),
         builder: (context, AsyncSnapshot<DocumentSnapshot> snapshot) {

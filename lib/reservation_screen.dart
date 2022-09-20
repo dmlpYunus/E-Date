@@ -50,7 +50,8 @@ class _ReservationPageState extends State<ReservationPage> {
             hoursView()
           ],
         ),
-        floatingActionButton: floatingActionBtn());
+        floatingActionButton: (buildHoursList().contains(selectedDateTime)) ? floatingActionBtn() : null,
+    );
   }
 
   @override
@@ -124,14 +125,18 @@ class _ReservationPageState extends State<ReservationPage> {
   }
 
   void montViewOnTap(int index) {
-    currentDateTime = date_util.DateUtils.daysInMonth(currentDateTime)[index];
-    selectedDay = currentDateTime;
-    clearDateTime(selectedDay);
-    selectedDateTime = selectedDay;
-    print('Selected Day :  $selectedDay');
-    print('Selected Time :  $selectedDateTime');
-    getAppointmentTable();
-    buildHoursList();
+    if(!currentMonthList[index]
+        .isBefore(
+    (DateTime.now().subtract(Duration(days: 1))))){
+      currentDateTime = date_util.DateUtils.daysInMonth(currentDateTime)[index];
+      selectedDay = currentDateTime;
+      clearDateTime(selectedDay);
+      selectedDateTime = selectedDay;
+      print('Selected Day :  $selectedDay');
+      print('Selected Time :  $selectedDateTime');
+      getAppointmentTable();
+      buildHoursList();
+    }
   }
 
   Widget hoursView() {
@@ -286,20 +291,25 @@ class _ReservationPageState extends State<ReservationPage> {
             height: 40,
             decoration: BoxDecoration(
                 gradient: LinearGradient(
-                    colors: (currentMonthList[index].day != currentDateTime.day)
+                    colors: (currentMonthList[index]
+                        .isBefore(
+                        (DateTime.now().subtract(Duration(days: 1)))
+                    )
+                    )
+                        ? [
+                      Colors.blueGrey.withOpacity(0.3),
+                      Colors.blueGrey.withOpacity(0.3),
+                      Colors.blueGrey.withOpacity(0.3),
+                    ] :
+                    (currentMonthList[index].day != currentDateTime.day)
                         ? [
                             Colors.transparent,
                             Colors.transparent,
                             Colors.transparent,
-                          ]
-                        : [
-                            /*Colors.blueGrey,
-                            Colors.blueAccent,*/
+                          ] :  [
                             HexColor('0416B5'),
                             HexColor('0416B5'),
                             HexColor('0416B5'),
-                            //Colors.blue,
-                            //Colors.blue,
                           ],
                     begin: const FractionalOffset(0.0, 0.0),
                     end: const FractionalOffset(0.0, 1.0),
@@ -323,8 +333,11 @@ class _ReservationPageState extends State<ReservationPage> {
                     style: TextStyle(
                         fontSize: 48,
                         fontWeight: FontWeight.bold,
-                        color:
-                            (currentMonthList[index].day != currentDateTime.day)
+                        color:(currentMonthList[index]
+                            .isBefore(
+                          (DateTime.now().subtract(Duration(days: 1))))) ?
+                            Colors.white38:
+                             (currentMonthList[index].day != currentDateTime.day)
                                 ? Colors.black
                                 : Colors.white),
                   ),
@@ -423,7 +436,6 @@ class _ReservationPageState extends State<ReservationPage> {
                 ),
         ),
         onPressed: () {
-          //Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorHomepage()));
           if (instructorAppointmentsList
               .contains(buildHoursList()[selectedHourIndex])) {
             displayErrorDialog("Error", "Selected Slot Not Available", context);
@@ -527,13 +539,6 @@ class _ReservationPageState extends State<ReservationPage> {
   }
 
   getToken() async {
-    /*FirebaseFirestore.instance
-        .collection('users')
-        .doc(FirebaseAuth.instance.currentUser!.uid)
-        .get()
-        .then((value) {
-      token = value.get('fcmToken').toString();
-    });*/
     FirebaseFirestore.instance
         .collection('users')
         .doc(instructor.id)
