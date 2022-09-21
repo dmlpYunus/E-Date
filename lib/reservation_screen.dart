@@ -116,12 +116,13 @@ class _ReservationPageState extends State<ReservationPage> {
   }
 
   void hoursViewOnTap(int index) {
-    selectedHourIndex = index;
-    selectedDateTime =
-        selectedDay.add(Duration(hours: buildHoursList()[index].hour));
-    print('Selected Day :  $selectedDay');
-    print('Selected Time :  $selectedDateTime');
-
+    if(buildHoursList()[index].isAfter(DateTime.now())){
+      selectedHourIndex = index;
+      selectedDateTime =
+          selectedDay.add(Duration(hours: buildHoursList()[index].hour));
+      print('Selected Day :  $selectedDay');
+      print('Selected Time :  $selectedDateTime');
+    }
   }
 
   void montViewOnTap(int index) {
@@ -160,8 +161,12 @@ class _ReservationPageState extends State<ReservationPage> {
                 AsyncSnapshot<QuerySnapshot> snapshot,
                 ) {
               return ListTile(
-                tileColor: (selectedDateTime == buildHoursList()[index]) ? Colors.blueGrey.withOpacity(0.2) : Colors.transparent,
-                  shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+                tileColor: (buildHoursList()[index].isBefore(DateTime.now()))
+                    ? Colors.transparent//.withOpacity(0.3)
+                    : (selectedDateTime == buildHoursList()[index])
+                    ? Colors.blueGrey.withOpacity(0.2)
+                    : Colors.transparent,
+                shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
                   leading: const Icon(
                     Icons.access_time,
                     color: Colors.black,
@@ -173,8 +178,23 @@ class _ReservationPageState extends State<ReservationPage> {
                         color: (selectedDateTime == buildHoursList()[index]) ? Colors.white : Colors.black,
                         fontSize: 20,
                         fontWeight: FontWeight.bold,
+                        decoration: (buildHoursList()[index].isBefore(DateTime.now())) ?
+                        TextDecoration.lineThrough
+                            : TextDecoration.none
                       ),textAlign: TextAlign.justify),
-                  trailing: (snapshot.hasData &&
+
+                  trailing: (buildHoursList()[index].isBefore(DateTime.now()))
+                      ?
+                  Icon(Icons.block_rounded,color: Colors.blueGrey,size: 30)
+                  /*const Text(
+                      'Invalid',
+                      textAlign: TextAlign.justify,
+                      style: TextStyle(
+                        color: Colors.blueGrey,
+                        fontSize: 15,
+                        fontWeight: FontWeight.bold,
+                      ))*/ :
+                  (snapshot.hasData &&
                       snapshot.data!.docs
                           .where((element) =>
                       buildHoursList()[index] ==
@@ -196,11 +216,12 @@ class _ReservationPageState extends State<ReservationPage> {
               fontSize: 15,
               fontWeight: FontWeight.bold,
               )),
-                onTap: (){
+                onTap: (buildHoursList()[index].isAfter(DateTime.now()))
+                    ? (){
                   setState(() {
                     hoursViewOnTap(index);
                   });
-                },
+                } : null,
               );
             },
           );
@@ -298,8 +319,8 @@ class _ReservationPageState extends State<ReservationPage> {
                     )
                         ? [
                       Colors.blueGrey.withOpacity(0.3),
-                      Colors.blueGrey.withOpacity(0.3),
-                      Colors.blueGrey.withOpacity(0.3),
+                      Colors.blueGrey.withOpacity(0.6),
+                      Colors.blueGrey.withOpacity(0.9),
                     ] :
                     (currentMonthList[index].day != currentDateTime.day)
                         ? [

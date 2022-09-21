@@ -263,13 +263,10 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
                 Text('Zoom Link : ${appointment['zoomLink']}',
                   style: const TextStyle(color: Colors.black),
                 ),
-                  Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
                   SizedBox(
                     height: height * 0.02,
                   ),
-                  Text('Student UID : ${appointment['studentUID']}',
+                  Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
                     style: const TextStyle(color: Colors.black),
                   ),
                   SizedBox(
@@ -357,12 +354,6 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
                     height: height * 0.02,
                   ),
                   Text('Student : ${appointment['studentName']} ${appointment['studentSurname']}',
-                    style: const TextStyle(color: Colors.black),
-                  ),
-                  SizedBox(
-                    height: height * 0.02,
-                  ),
-                  Text('Student UID : ${appointment['studentUID']}',
                     style: const TextStyle(color: Colors.black),
                   ),
                   SizedBox(

@@ -190,8 +190,11 @@ class _AdminDisplayAppointmentState extends State<AdminDisplayAppointment> {
                               Image.asset('images/calendarr.png'),
                               subtitle: Text(timeStampToDateTime(
                                   appointments['dateTime'])),
-                              title: Text(
-                                  '${appointments['instructorName']} ${appointments['instructorSurname']}'),
+                              title:(selected['name'] == 'instructor')
+                                  ? Text(
+                                  '${appointments['instructorName']} ${appointments['instructorSurname']}')
+                                  : Text(
+                                  '${appointments['studentName']} ${appointments['studentSurname']}'),
                             ),
                           );
                         }).toList(),

@@ -28,7 +28,7 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text("Welcome To E-Date", textAlign: TextAlign.center,style: TextStyle(fontSize: 30,fontWeight: FontWeight.bold,color: Colors.blueGrey),),
-              const SizedBox(height: 20),
+              const SizedBox(height: 30),
               buildNameText(),
               const SizedBox(height: 20),
               buildSurnameText(),
@@ -61,7 +61,14 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
       keyboardType: TextInputType.emailAddress,
       validator: validateMail,
       decoration: const InputDecoration(
-          labelText: ("E-Mail"), hintText: ("xxxx@isik.edu.tr")),
+          labelText: ("E-Mail"), hintText: ("xxxx@isik.edu.tr"),
+          border: OutlineInputBorder(
+          borderSide: BorderSide(
+          color: Colors.black,
+      style: BorderStyle.solid,
+          width: 2.0),
+        borderRadius: BorderRadius.all(Radius.circular(20))),
+    ),
     );
   }
 
@@ -70,7 +77,14 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
       controller: passController,
       keyboardType: TextInputType.visiblePassword,
       validator: validatePassword,
-      decoration: const InputDecoration(labelText: ("Password"), hintText: "***"),
+      decoration: const InputDecoration(labelText: ("Password"), hintText: "******",
+          border: OutlineInputBorder(
+          borderSide: BorderSide(
+          color: Colors.black,
+          style: BorderStyle.solid,
+          width: 2.0),
+        borderRadius: BorderRadius.all(Radius.circular(20))),
+    ),
       obscureText: true,
     );
   }
@@ -80,7 +94,14 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
       controller: nameController,
       keyboardType: TextInputType.name,
       validator: validateName,
-      decoration: const InputDecoration(labelText: ("Name")),
+      decoration: const InputDecoration(labelText: ("Name"),
+        border: OutlineInputBorder(
+            borderSide: BorderSide(
+                color: Colors.black,
+            style: BorderStyle.solid,
+            width: 2.0),
+        borderRadius: BorderRadius.all(Radius.circular(20))),
+      ),
       obscureText: false,
     );
   }
@@ -90,13 +111,20 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
       controller: surnameController,
       keyboardType: TextInputType.name,
       validator: validateSurname,
-      decoration: const InputDecoration(labelText: ("Surname")),
+      decoration: const InputDecoration(labelText: ("Surname"),
+        border: OutlineInputBorder(
+            borderSide: BorderSide(
+                color: Colors.black,
+                style: BorderStyle.solid,
+                width: 2.0),
+            borderRadius: BorderRadius.all(Radius.circular(20))),
+      ),
       obscureText: false,
     );
   }
 
   Widget buildSignUpButton() {
-    return ElevatedButton(
+    return OutlinedButton(
       onPressed: () async {
         if (key.currentState!.validate()) {
           key.currentState!.save();
@@ -111,7 +139,17 @@ class _SignUpPageState extends State<SignupPage> with AccountValidationMixin {
           }
         }
       },
-      child: const Text("Sign-Up"),
+      style: OutlinedButton.styleFrom(
+        primary: Colors.black,
+        shadowColor: Colors.transparent,
+        backgroundColor: Colors.transparent,
+        side: BorderSide(
+            style: BorderStyle.solid,
+            color: Colors.black,
+          width: 3
+        )
+      ),
+      child: const Text("Sign-Up",style: TextStyle(color: Colors.black)),
     );
   }
 

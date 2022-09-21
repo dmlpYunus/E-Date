@@ -17,11 +17,14 @@ class _LoginPageState extends State<LoginPage> with AccountValidationMixin {
   AuthService authService = AuthService();
   final emailEditor = TextEditingController();
   final passEditor = TextEditingController();
+  late double height,width;
   late String? errorMessage;
 
 
   var key = GlobalKey<FormState>();
   Widget build(BuildContext context) {
+    height = MediaQuery.of(context).size.height;
+    width = MediaQuery.of(context).size.width;
     return Scaffold(
       resizeToAvoidBottomInset: false,
       body: Form(
@@ -30,8 +33,16 @@ class _LoginPageState extends State<LoginPage> with AccountValidationMixin {
           padding: const EdgeInsets.only(left: 20,right: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.center,
-            mainAxisAlignment: MainAxisAlignment.center,
+            //mainAxisAlignment: MainAxisAlignment.center,
             children: [
+              SizedBox(height: 80),
+              Text('Welcome To E-Date System',style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+              )),
+              SizedBox(height: 100),
+              Image.asset('images/password.png',scale: 4),
+              SizedBox(height: 50),
               TextFormField(
                   autovalidateMode: AutovalidateMode.onUserInteraction,
                   controller: emailEditor,
@@ -39,9 +50,9 @@ class _LoginPageState extends State<LoginPage> with AccountValidationMixin {
                   validator: validateMail,
                   decoration: const InputDecoration(
                       contentPadding: EdgeInsets.only(left: 18),
-                      focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.greenAccent)),
+                      focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blueAccent)),
                       labelText: ("E-Mail"), hintText: ("xxxx@isik.edu.tr"),border: OutlineInputBorder(
-                      borderRadius: BorderRadius.all(Radius.circular(40),)
+                      borderRadius: BorderRadius.all(Radius.circular(20),)
                   )),
                 ),
                 SizedBox(height: 20),
@@ -53,15 +64,21 @@ class _LoginPageState extends State<LoginPage> with AccountValidationMixin {
                   decoration:
                       const InputDecoration(
                           contentPadding: EdgeInsets.only(left: 18),
+                          focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.blue)),
                           labelText: ("Password"), hintText: "*******",border: OutlineInputBorder(
-                          borderRadius: BorderRadius.all(Radius.circular(40))
+                          borderRadius: BorderRadius.all(Radius.circular(20))
                       )),
                   obscureText: true,
                 ),
               Container(
-                margin: EdgeInsets.only(top:40),
+                margin: EdgeInsets.only(top:20),
                 child: ElevatedButton(
-                  style:  ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.redAccent)) ,
+                  style: OutlinedButton.styleFrom(
+                    primary: Colors.black,
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: StadiumBorder(side: BorderSide(color: Colors.black))
+                  ),
                   onPressed: () async {
                     if (key.currentState!.validate()) {
                       key.currentState!.save();
@@ -71,24 +88,21 @@ class _LoginPageState extends State<LoginPage> with AccountValidationMixin {
                       }on FirebaseAuthException catch(error){
                        displayDialog("Login Failed", error.message!, context);
                       }
-
                     }
                   },
                   child: Text("Sign-In"),
                 ),
               ),
-
-
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   mainAxisSize: MainAxisSize.min,
                   children: [
                   TextButton(onPressed: (){
                     Navigator.push(context, MaterialPageRoute(builder: (context) => ForgetPasswordPage()));
-                  }, child: Text("Forget My Password")),
-              MaterialButton(child: Text("Don't Have An Account ?"),
+                   }, child: Text("Forget My Password")),
+                  MaterialButton(child: Text("Don't Have An Account ?"),
                     onPressed: (){
-                Navigator.push(context, MaterialPageRoute(builder: (context) => SignupPage()));
+                    Navigator.push(context, MaterialPageRoute(builder: (context) => SignupPage()));
                     },),
                   ],
                 )
@@ -98,6 +112,8 @@ class _LoginPageState extends State<LoginPage> with AccountValidationMixin {
       ),
     );
   }
+
+
 
   void displayDialog(String Title, String message, BuildContext context) {
     var alert = AlertDialog(

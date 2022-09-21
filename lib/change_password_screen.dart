@@ -104,7 +104,7 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> with AccountVal
                     focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black)),
                     labelText: ("Current Password"),
                     border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(40)),
+                    borderRadius: BorderRadius.all(Radius.circular(20)),
                 )),
               ),
               SizedBox(height: 20),
@@ -116,15 +116,21 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> with AccountVal
                 decoration:
                 const InputDecoration(
                     contentPadding: EdgeInsets.only(left: 18),
+                    focusedBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.black)),
                     labelText: ("New Password"),border: OutlineInputBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(40))
+                    borderRadius: BorderRadius.all(Radius.circular(20))
                 )),
                 obscureText: true,
               ),
               Container(
                 margin: EdgeInsets.only(top:40),
-                child: ElevatedButton(
-                  style:  ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.redAccent)) ,
+                child: OutlinedButton(
+                  style:  OutlinedButton.styleFrom(
+                    primary:Colors.black,
+                    shadowColor: Colors.transparent,
+                    backgroundColor: Colors.transparent,
+                    side: BorderSide(color: Colors.black,width: 2,style: BorderStyle.solid),
+                  ),
                   onPressed: () async {
                     if (key.currentState!.validate()) {
                       key.currentState!.save();
