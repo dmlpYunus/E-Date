@@ -1,13 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutterfirebasedeneme/admin_display_appointments.dart';
-import 'package:flutterfirebasedeneme/admin_screen.dart';
 import 'package:flutterfirebasedeneme/search_widget.dart';
-import 'Model/instructor.dart';
-import 'package:flutterfirebasedeneme/auth_service.dart';
-import 'package:flutterfirebasedeneme/reservation_screen.dart';
+
 
 
 class AllStudents extends StatefulWidget {
@@ -19,7 +14,6 @@ class AllStudents extends StatefulWidget {
 
 class _AllStudentsState extends State<AllStudents>{
   final textController = TextEditingController();
-  final AuthService _authService = AuthService();
   CollectionReference studentsdb =
   FirebaseFirestore.instance.collection("users");
   late Stream<QuerySnapshot<Object?>> studentsStream;

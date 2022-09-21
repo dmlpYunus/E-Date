@@ -1,8 +1,7 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/material.dart';
-import 'package:flutterfirebasedeneme/login_screen.dart';
+
 
 
 class AuthService {
@@ -98,14 +97,16 @@ class AuthService {
         'email': email,
         'password': pass,
         'role': 'instructor',
-        'Id': email.split('@')[0].toUpperCase(),
+        'id': email.split('@')[0].toLowerCase(),
         'UID' : user.user?.uid
       },
     );
     return user.user;
   }
 
-  forgetPassword(String email) {
-    _mauth.sendPasswordResetEmail(email: email);
+   forgetPassword(String email) async {
+    return _mauth.sendPasswordResetEmail(email: email);
   }
+
+
 }

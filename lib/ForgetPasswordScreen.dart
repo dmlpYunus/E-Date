@@ -98,11 +98,15 @@ class _ForgetPasswordPage extends State<ForgetPasswordPage> with AccountValidati
               primary: Colors.black,
               side: BorderSide(color: Colors.black)
             ) ,
-            onPressed: () {
+            onPressed: () async {
               if (key.currentState!.validate()) {
                 key.currentState!.save();
-                authService.forgetPassword(_forgetEmail);
-                //Navigator.push(context, MaterialPageRoute(builder : (context) => MyApp()));
+                authService.forgetPassword(_forgetEmail).then({
+                  displaySnackBar('Password Refresh Mail Sent'),
+                  key.currentState!.reset(),
+                  emailEditor.clear()
+                }
+                );
               }
             },
             child: Text("Send E-mail"),
@@ -119,38 +123,21 @@ class _ForgetPasswordPage extends State<ForgetPasswordPage> with AccountValidati
     );
     showDialog(context: context, builder: (BuildContext context) => alert);
   }
+
+  void displaySnackBar(String message) {
+    var snackBar = SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(fontSize: 14),
+        textAlign: TextAlign.center,
+      ),
+      dismissDirection: DismissDirection.down,
+      margin: const EdgeInsets.all(10),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.green,
+      duration: const Duration(milliseconds: 600),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
 }
-/* body: Form(
-        key: key,
-        child: Padding(
-          padding: EdgeInsets.only(left:30,right: 30),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Image.asset('images/student.png',scale: 3),
-              TextFormField(
-                controller: emailEditor,
-                keyboardType: TextInputType.emailAddress,
-                validator: validateMail,
-                decoration: const InputDecoration(
-                    labelText: ("E-Mail"), hintText: ("xxxx@isik.edu.tr")),
-                onSaved: (value){
-                  _forgetEmail = value!;
-                },
-              ),
-              SizedBox(height: 20),
-              ElevatedButton(
-                style:  ButtonStyle(backgroundColor: MaterialStateColor.resolveWith((states) => Colors.redAccent)) ,
-                onPressed: () {
-                  if (key.currentState!.validate()) {
-                    key.currentState!.save();
-                    authService.forgetPassword(_forgetEmail);
-                    //Navigator.push(context, MaterialPageRoute(builder : (context) => MyApp()));
-                  }
-                },
-                child: Text("Send E-mail"),
-              ),
-            ],
-          ),
-        ),
-      ),*/
+

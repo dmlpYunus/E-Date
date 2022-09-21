@@ -39,7 +39,7 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,
           foregroundColor: Colors.black,
-          title: const Text('E-Date',style: TextStyle(color: Colors.black)),
+          title: const Text('E-Date',style: TextStyle(color: Colors.black,fontSize: 30)),
           centerTitle: true,
           actions: [
             InkWell(
@@ -79,8 +79,8 @@ class _InstructorHomepageState extends State<InstructorHomepage> {
       width: width,
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [Text('Welcome',style: TextStyle(fontSize: 24,color: Colors.black,fontWeight: FontWeight.bold)),
-          Text('Today\'s appointments',style: TextStyle(fontSize: 18,color: Colors.black,fontWeight: FontWeight.normal))],
+        children: const [Text('Welcome',style: TextStyle(fontSize: 24,color: Colors.blue,fontWeight: FontWeight.bold)),
+          Text('Today\'s appointments',style: TextStyle(fontSize: 18,color: Colors.deepOrangeAccent,fontWeight: FontWeight.normal))],
       ),
     );
   }

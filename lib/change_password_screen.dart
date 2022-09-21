@@ -1,9 +1,8 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutterfirebasedeneme/ForgetPasswordScreen.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/login_validator.dart';
-import 'package:flutterfirebasedeneme/signup_screen.dart';
+
 
 class ChangePasswordPage extends StatefulWidget {
   const ChangePasswordPage({Key? key}) : super(key: key);
@@ -138,10 +137,11 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> with AccountVal
                           .credential(email:_firebaseAuth.currentUser!.email!, password: currentPassController.text);
                       try{
                         await _firebaseAuth.currentUser!.reauthenticateWithCredential(credential);
-                        displayDialog('Password Changed', 'Password Updated', context);
-
+                        await _firebaseAuth.currentUser!.updatePassword(newPassController.text).then((value){
+                          displayDialogSuccessful('Password Changed', 'Password Updated', context);
+                        });
                       }on FirebaseAuthException catch(error){
-                        displayDialog("Password Change Fail", error.message!, context);
+                        displayDialogFail("Password Change Fail", error.message!, context);
                       }
                     }
                   },
@@ -170,7 +170,19 @@ class _ChangePasswordPageState extends State<ChangePasswordPage> with AccountVal
     );
   }
 
-  void displayDialog(String title, String message, BuildContext context) {
+  void displayDialogSuccessful(String title, String message, BuildContext context) {
+    var alert = AlertDialog(
+      title: Text(title,style: TextStyle(color: (title != 'Password Changed') ? Colors.redAccent : Colors.green)),
+      content: Text(message),
+      actions: [ElevatedButton(onPressed: (){
+        Navigator.pop(context);
+        Navigator.pop(context);
+      }, child: Text('OK'))],
+    );
+    showDialog(context: context, builder: (BuildContext context) => alert);
+  }
+
+  void displayDialogFail(String title, String message, BuildContext context) {
     var alert = AlertDialog(
       title: Text(title,style: TextStyle(color: (title != 'Password Changed') ? Colors.redAccent : Colors.green)),
       content: Text(message),

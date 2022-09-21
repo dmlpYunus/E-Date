@@ -3,8 +3,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
-import 'package:flutterfirebasedeneme/main.dart';
-import 'package:mailer/mailer.dart';
+import 'package:flutterfirebasedeneme/login_validator.dart';
 import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'utils/date_utils.dart' as date_utils;
@@ -18,7 +17,7 @@ class AppointmentApproval extends StatefulWidget {
   State<AppointmentApproval> createState() => _AppointmentApprovalState();
 }
 
-class _AppointmentApprovalState extends State<AppointmentApproval> {
+class _AppointmentApprovalState extends State<AppointmentApproval> with AccountValidationMixin {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   AuthService authService = AuthService();
@@ -29,6 +28,8 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
   CollectionReference appointments =
       FirebaseFirestore.instance.collection("appointments");
   late Stream<QuerySnapshot<Object?>> app;
+  var key = GlobalKey<FormState>();
+  final denyController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -41,7 +42,7 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
         foregroundColor: Colors.black,
         backgroundColor: Colors.transparent,
         leading: IconButton(icon: const Icon(Icons.arrow_back_ios_new_rounded),onPressed: () =>Navigator.pop(context)),
-        title: const Text('Pending Appointment Requests',style: TextStyle(fontSize: 24,fontWeight: FontWeight.w600)),
+        title: const Text('Pending Appointment Requests',style: TextStyle(fontSize: 20,fontWeight: FontWeight.w600)),
       ),
       body: Stack(
         children: [buildPendingAppointmentsList(),buildApprovalInfo()],
@@ -276,7 +277,7 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(20)),
             child: Container(
-              height: 200,
+              height: height * 0.3,
               width: 320,
               padding: const EdgeInsets.all(12),
               child: Column(
@@ -295,12 +296,17 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
                   const SizedBox(
                     height: 30,
                   ),
-                  const TextField(
-                    style: TextStyle(color: Colors.white),
-                    autofocus: true,
-                    decoration: InputDecoration(
-                        hintText: 'Specify the reason for the refusal',
-                        hintStyle: TextStyle(color: Colors.white60)),
+                  Form(
+                    key: key,
+                    child:  TextFormField(
+                      style: TextStyle(color: Colors.white),
+                      autofocus: true,
+                      validator: validateDenyReason,
+                      controller: denyController,
+                      decoration: InputDecoration(
+                          hintText: 'Specify the reason for the refusal',
+                          hintStyle: TextStyle(color: Colors.white60)),
+                    ),
                   ),
                   const SizedBox(
                     height: 20,
@@ -308,13 +314,17 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
                   SizedBox(
                     width: 320,
                     child: ElevatedButton(
-                      onPressed: () {
-                        setState(() {
-                          appointments.doc(appointment.id).update({'status': 'Denied'});
-                          appointments.doc(appointment.id).update({'reason': 'Denied'});
-                          displaySnackBar('Appointment Denied');
+                      onPressed: () async {
+                        setState(() async {
+                          if(key.currentState!.validate()){
+                            key.currentState!.save();
+                              appointments.doc(appointment.id).update({'status': 'Denied'});
+                              appointments.doc(appointment.id).update({'reason': denyController.text});
+                              displaySnackBar('Appointment Denied');
+                              Navigator.of(context).pop();
+                          }
                         });
-                        Navigator.of(context).pop();
+
                       },
                       child: const Text("Submit"),
                     ),
@@ -399,7 +409,7 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
   Future<oauth2.Client> createClient () async{
     const clientId = 'HGI6qXptRICTxqQ9G5ynAw';  //Client ID
     const clientSecret = 'G1z4aoYbTZy7pYwbWQzR9eitLj2nFAxW';   //Client Secret
-    const scopes = [];
+    //const scopes = [];
     final authorizationEndpoint =
     Uri.parse('https://zoom.us/oauth/authorize');
     final tokenEndpoint =
@@ -446,7 +456,6 @@ class _AppointmentApprovalState extends State<AppointmentApproval> {
   }
 
   createMeetingPostHeader(){
-    /// TODO : IMPLEMENT AUTHORIZATION CODE ALL FOR ALL TIMES
     return <String, String>{
       'Content-Type': 'application/json',
       'Authorization':

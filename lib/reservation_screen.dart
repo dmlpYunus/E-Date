@@ -93,7 +93,7 @@ class _ReservationPageState extends State<ReservationPage> {
         .collection('appointments')
         .where('dateTimeDay', isEqualTo: selectedDay)
         .where('instructorId', isEqualTo: instructor.id)
-        .where('status',whereNotIn: ['pending','Cancelled','Denied','Declined'])
+        .where('status',whereNotIn: ['Cancelled','Denied','Declined'])
         .get()
         .then((snapshot) {
       instructorAppointmentsList.clear();
@@ -105,6 +105,7 @@ class _ReservationPageState extends State<ReservationPage> {
             .add(snapshot.docs[i].get('dateTime').toDate());
       }
     });
+
   }
 
   List<DateTime> buildHoursList() {

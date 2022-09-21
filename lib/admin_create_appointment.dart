@@ -1,10 +1,7 @@
 import 'dart:convert';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutterfirebasedeneme/search_widget.dart';
-import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'Model/instructor.dart';
 import 'utils/date_utils.dart' as date_util;
 import 'package:http/http.dart' as http;
@@ -19,7 +16,6 @@ class AdminCreateAppointment extends StatefulWidget {
 
 class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
   final textController = TextEditingController();
-  final AuthService _authService = AuthService();
   CollectionReference studentsdb =
   FirebaseFirestore.instance.collection("users");
   CollectionReference instructorsdb =
@@ -35,7 +31,6 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
 
   late String instName;
   late Instructor instructor;
-  final _firebaseAuth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   late String name, surname, id, email, role,uID;
   late String token;
@@ -500,8 +495,10 @@ class _AdminCreateAppointmentState extends State<AdminCreateAppointment>{
         onPressed: () {
           //Navigator.push(context, MaterialPageRoute(builder: (context) => InstructorHomepage()));
           if (instructorAppointmentsList
-              .contains(buildHoursList()[selectedHourIndex])) {
+              .contains(buildHoursList()[selectedHourIndex])  ) {
             displayErrorDialog("Error", "Selected Slot Not Available", context);
+          }else if(!buildHoursList().contains(selectedDateTime)){
+            displayErrorDialog("Error", "Selected A Time Slot", context);
           } else {
             createAppointment(selectedDateTime);
           }

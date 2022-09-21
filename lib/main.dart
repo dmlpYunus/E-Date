@@ -1,7 +1,5 @@
-import 'dart:developer';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
@@ -13,7 +11,7 @@ import 'package:flutterfirebasedeneme/instructor_homepage.dart';
 import 'package:flutterfirebasedeneme/student_home_page.dart';
 import 'package:flutterfirebasedeneme/login_screen.dart';
 import 'firebase_options.dart';
-import 'package:http/http.dart' as http;
+
 
 FlutterLocalNotificationsPlugin? flutterLocalNotificationsPlugin;
 AndroidNotificationChannel? channel;
@@ -71,7 +69,7 @@ class _MyAppState extends State<MyApp> {
       FirebaseMessaging.instance.getToken().then((value) {
         print('Token $value');
         var a = {'fcmToken': value};
-        FirebaseFirestore.instance
+        _firestore
             .collection("users")
             .doc(FirebaseAuth.instance.currentUser?.uid.toString())
             .update(a);

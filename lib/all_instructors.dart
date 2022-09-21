@@ -1,9 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutterfirebasedeneme/search_widget.dart';
-import 'package:flutterfirebasedeneme/auth_service.dart';
-
 import 'admin_display_appointments.dart';
 
 
@@ -16,7 +13,7 @@ class AllInstructors extends StatefulWidget {
 
 class _AllInstructorsState extends State<AllInstructors>{
   final textController = TextEditingController();
-  AuthService _authService = AuthService();
+
   CollectionReference instructorsdb =
   FirebaseFirestore.instance.collection("users");
   late Stream<QuerySnapshot<Object?>> instructorsStream;

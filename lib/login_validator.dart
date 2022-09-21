@@ -14,7 +14,7 @@ class AccountValidationMixin{
     if(value == null || value.isEmpty){
       return "Password can't be Empty!";
     }else if(value.length<6){
-      return "Password name must be at least 6 characters";
+      return "Password must be at least 6 characters";
     }
   }
 
@@ -27,6 +27,12 @@ class AccountValidationMixin{
   String? validateSurname(String? value){
     if(value == null || value.isEmpty){
       return "Surname can't be Empty!";
+    }
+  }
+
+  String? validateDenyReason(String? value){
+    if(value == null || value.isEmpty){
+      return 'Reason for rejection cannot be empty';
     }
   }
 

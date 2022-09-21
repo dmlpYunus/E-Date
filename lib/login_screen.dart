@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutterfirebasedeneme/ForgetPasswordScreen.dart';
 import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/login_validator.dart';
-import 'package:flutterfirebasedeneme/main.dart';
 import 'package:flutterfirebasedeneme/signup_screen.dart';
 
 class LoginPage extends StatefulWidget {
@@ -13,7 +12,6 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> with AccountValidationMixin {
-  @override
   AuthService authService = AuthService();
   final emailEditor = TextEditingController();
   final passEditor = TextEditingController();

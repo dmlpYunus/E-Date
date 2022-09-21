@@ -369,8 +369,9 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
                           children : (appointment['status'] == 'pending') ?[
                             ElevatedButton(
                               onPressed: () { // DELETE
-                                setState(() async {
-                                  await appointmentsdb.doc(appointment.id).delete().then((value) {
+                                setState(()  {
+                                    appointmentsdb.doc(appointment.id).delete().then((value) {
+
                                     Navigator.pop(context);
                                   });
                                 });
@@ -400,6 +401,22 @@ class _StudentUpcomingAppointmentsState extends State<StudentUpcomingAppointment
             ),
           );
         });
+  }
+
+  void displaySnackBar(String message) {
+    var snackBar = SnackBar(
+      content: Text(
+        message,
+        style: const TextStyle(fontSize: 14),
+        textAlign: TextAlign.center,
+      ),
+      dismissDirection: DismissDirection.down,
+      margin: const EdgeInsets.all(10),
+      behavior: SnackBarBehavior.floating,
+      backgroundColor: Colors.green,
+      duration: const Duration(milliseconds: 600),
+    );
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
   timeStampToDateTime(Timestamp timeStamp) {

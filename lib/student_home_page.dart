@@ -1,11 +1,8 @@
 import 'dart:convert';
-import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutterfirebasedeneme/admin_screen.dart';
 import 'package:flutterfirebasedeneme/search_widget.dart';
 import 'package:flutterfirebasedeneme/student_account_settings.dart';
@@ -14,12 +11,9 @@ import 'package:flutterfirebasedeneme/student_upcoming_appointments_screen.dart'
 import 'package:uni_links/uni_links.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'Model/instructor.dart';
-import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'package:flutterfirebasedeneme/reservation_screen.dart';
-import 'package:http/http.dart' as http;
 import 'package:oauth2/oauth2.dart' as oauth2;
 
-import 'instructor_upcoming_appointments_screen.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -31,7 +25,6 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final textController = TextEditingController();
-  AuthService _authService = AuthService();
   final FirebaseAuth _firebaseAuth = FirebaseAuth.instance;
   CollectionReference instructorsdb =
   FirebaseFirestore.instance.collection("users");
@@ -204,7 +197,7 @@ class _HomePageState extends State<HomePage> {
 
   buildInstructorsList() {
     return Container(
-      height: height * 0.7,
+      height: height * 0.8,
       margin: EdgeInsets.only(top: height * 0.1),
       child: StreamBuilder(
           stream: instructorsStream,
@@ -328,7 +321,7 @@ class _HomePageState extends State<HomePage> {
     const clientId = 'HGI6qXptRICTxqQ9G5ynAw';  //Client ID
     //const clientSecret = 'uPqRlI90JixAnbmO8CR8JRmroqBlFnqa';   //Client Secret
     const clientSecret = 'G1z4aoYbTZy7pYwbWQzR9eitLj2nFAxW';   //Client Secret
-    const scopes = [];
+    //const scopes = [];
     final authorizationEndpoint =
     Uri.parse('https://zoom.us/oauth/authorize');
     final tokenEndpoint =

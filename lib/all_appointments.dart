@@ -1,8 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutterfirebasedeneme/search_widget.dart';
-import 'package:flutterfirebasedeneme/auth_service.dart';
 import 'utils/date_utils.dart' as date_util;
 
 
@@ -15,7 +13,6 @@ class AllAppointments extends StatefulWidget {
 
 class _AllAppointmentsState extends State<AllAppointments>{
   final textController = TextEditingController();
-  final AuthService _authService = AuthService();
   CollectionReference appointmentsdb =
   FirebaseFirestore.instance.collection("appointments");
   late Stream<QuerySnapshot<Object?>> appointmentsStream;
@@ -152,7 +149,7 @@ class _AllAppointmentsState extends State<AllAppointments>{
                     const Icon(Icons.done_outlined,color: Colors.green) :
                     const Icon(Icons.delete,color: Colors.deepPurple,),
                     subtitle: Text(date_util.DateUtils.apiDayFormat(appointments['dateTime'].toDate())),
-                    title: Text('${appointments['studentName']} ${appointments['studentSurname']}',),
+                    title: Text('${appointments['studentName']} ${appointments['studentSurname']} - ${appointments['instructorName']} ${appointments['instructorSurname']}',),
                   ),
                 );
               }).toList(),
